@@ -43,6 +43,7 @@ import {
 
 interface BrandSettings {
   companyName?: string;
+  programName?: string;
   companyLogo?: string;
   brandBackgroundColor?: string;
   brandButtonColor?: string;
@@ -72,7 +73,7 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
   };
 
   const accentColor = brand.brandButtonColor || '#059669';
-  const brandName = brand.companyName || 'Refferq';
+  const brandName = brand.companyName || brand.programName || 'Refferq';
 
   return (
     <Sidebar variant="inset">

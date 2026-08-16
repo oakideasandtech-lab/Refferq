@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const settings = await prisma.programSettings.findFirst({
       select: {
         companyName: true,
+        programName: true,
         companyLogo: true,
         brandBackgroundColor: true,
         brandButtonColor: true,
