@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProgramSettings } from '@/hooks/useProgramSettings';
 import {
   Card,
   CardContent,
@@ -43,10 +44,10 @@ interface Payout {
 
 export default function PayoutsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { currencySymbol, settings } = useProgramSettings();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
 
   useEffect(() => {
     if (!authLoading && user) fetchPayouts();
@@ -64,7 +65,6 @@ export default function PayoutsPage() {
       if (payData.success) setPayouts(payData.payouts || []);
       if (profileData.success) {
         setBalance(profileData.affiliate?.balanceCents || 0);
-        setCurrencySymbol(profileData.currencySymbol || '₹');
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -206,7 +206,7 @@ export default function PayoutsPage() {
           <div>
             <p className="text-sm font-medium text-blue-900">Payout Schedule</p>
             <p className="text-sm text-blue-700">
-              Payouts are processed on the 1st of each month for the previous month&apos;s earnings. Minimum payout threshold is {currencySymbol}1,000.
+              Payouts are processed on the 1st of each month for the previous month's earnings. Minimum payout threshold is {currencySymbol}{((settings.minimumPayoutThreshold || 0) / 100).toLocaleString()}.
             </p>
           </div>
         </CardContent>

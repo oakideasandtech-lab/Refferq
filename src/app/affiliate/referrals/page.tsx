@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProgramSettings } from '@/hooks/useProgramSettings';
 import {
   Card,
   CardContent,
@@ -63,6 +64,7 @@ interface Referral {
 
 export default function ReferralsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { currencySymbol } = useProgramSettings();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -305,7 +307,7 @@ export default function ReferralsPage() {
                     <TableCell>{getStatusBadge(ref.status)}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(ref.createdAt)}</TableCell>
                     <TableCell className="text-right font-semibold">
-                      {`\u20B9${(Number(ref.estimatedValue) || 0).toFixed(2)}`}
+                      {`${currencySymbol}${(Number(ref.estimatedValue) || 0).toFixed(2)}`}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -345,7 +347,7 @@ export default function ReferralsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Estimated Deal Size (₹) *</Label>
+              <Label>Estimated Deal Size ({currencySymbol}) *</Label>
               <Input
                 type="number"
                 required

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useProgramSettings } from '@/hooks/useProgramSettings';
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from '@/components/ui/card';
@@ -41,6 +42,7 @@ interface Invoice {
 }
 
 export default function InvoicesPage() {
+  const { currencySymbol } = useProgramSettings();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -119,7 +121,7 @@ export default function InvoicesPage() {
   };
 
   const formatCurrency = (cents: number) =>
-    `\u20B9${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -280,7 +282,7 @@ export default function InvoicesPage() {
               <div className="grid gap-2">
                 <Label>Amount (cents) *</Label>
                 <Input type="number" value={form.amountCents} onChange={e => setForm({...form, amountCents: e.target.value})} placeholder="100000" />
-                <p className="text-xs text-muted-foreground">100000 = ₹1,000</p>
+                <p className="text-xs text-muted-foreground">100000 = {currencySymbol}1,000</p>
               </div>
               <div className="grid gap-2">
                 <Label>Tax (cents)</Label>
