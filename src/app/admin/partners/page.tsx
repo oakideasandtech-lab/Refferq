@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useProgramSettings } from '@/hooks/useProgramSettings';
 import {
   Card,
   CardContent,
@@ -83,6 +84,7 @@ interface Partner {
 
 export default function PartnersPage() {
   const router = useRouter();
+  const { currencySymbol: settingsCurrencySymbol } = useProgramSettings();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [filteredPartners, setFilteredPartners] = useState<Partner[]>([]);
   const [activeTab, setActiveTab] = useState('active');
@@ -91,7 +93,7 @@ export default function PartnersPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedPartners, setSelectedPartners] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState(settingsCurrencySymbol);
   const [sortField, setSortField] = useState<keyof Partner>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -145,7 +147,7 @@ export default function PartnersPage() {
           groupName: '',
         }));
         setPartners(formattedPartners);
-        setCurrencySymbol(data.currencySymbol || '₹');
+        setCurrencySymbol(data.currencySymbol || settingsCurrencySymbol);
       }
     } catch (error) {
       console.error('Failed to fetch partners:', error);

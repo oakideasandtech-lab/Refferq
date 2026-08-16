@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useProgramSettings } from '@/hooks/useProgramSettings';
 import {
   Card,
   CardContent,
@@ -60,10 +61,11 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 };
 
 export default function PayoutsPage() {
+  const { currencySymbol: settingsCurrencySymbol } = useProgramSettings();
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [currencySymbol, setCurrencySymbol] = useState(settingsCurrencySymbol);
 
   useEffect(() => {
     fetchPayouts();
@@ -75,7 +77,7 @@ export default function PayoutsPage() {
       const data = await res.json();
       if (data.success) {
         setPayouts(data.payouts || []);
-        setCurrencySymbol(data.currencySymbol || '₹');
+        setCurrencySymbol(data.currencySymbol || settingsCurrencySymbol);
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
