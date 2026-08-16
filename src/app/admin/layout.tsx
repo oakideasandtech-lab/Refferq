@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -74,7 +74,14 @@ const configNavItems = [
   { title: 'API Analytics', url: '/admin/api-analytics', icon: Activity },
 ];
 
-function AdminSidebar() {
+interface BrandSettings {
+  companyName?: string;
+  programName?: string;
+  companyLogo?: string;
+  brandButtonColor?: string;
+}
+
+function AdminSidebar({ brand }: { brand: BrandSettings }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -84,17 +91,23 @@ function AdminSidebar() {
     return pathname.startsWith(url);
   };
 
+  const brandName = brand.companyName || brand.programName || 'Refferq';
+
   return (
     <Sidebar variant="inset">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="flex items-center gap-3 px-2 py-1.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <span className="text-lg">🎯</span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm" style={brand.brandButtonColor ? { backgroundColor: brand.brandButtonColor } : undefined}>
+                {brand.companyLogo ? (
+                  <img src={brand.companyLogo} alt={brandName} className="h-8 w-8 rounded-lg object-contain" />
+                ) : (
+                  <span className="text-lg">{brandName.charAt(0).toUpperCase()}</span>
+                )}
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold">Refferq</span>
+                <span className="text-sm font-bold">{brandName}</span>
                 <span className="text-xs text-muted-foreground">Admin Dashboard</span>
               </div>
             </div>
@@ -219,6 +232,16 @@ function AdminSidebar() {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [brand, setBrand] = useState<BrandSettings>({});
+
+  useEffect(() => {
+    fetch('/api/affiliate/branding')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.settings) setBrand(data.settings);
+      })
+      .catch(() => {});
+  }, []);
 
   if (loading) {
     return (
@@ -253,7 +276,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <AdminSidebar />
+      <AdminSidebar brand={brand} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
