@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useProgramSettings } from '@/hooks/useProgramSettings';
 import {
   Card,
   CardContent,
@@ -88,6 +89,7 @@ interface CommissionRule {
 }
 
 export default function ProgramSettingsPage() {
+  const { currencySymbol } = useProgramSettings();
   const [settings, setSettings] = useState<ProgramSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -493,7 +495,7 @@ export default function ProgramSettingsPage() {
                       <Badge variant="outline">{rule.type}</Badge>
                     </TableCell>
                     <TableCell>
-                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `₹${rule.value}`}
+                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `${currencySymbol}${rule.value}`}
                     </TableCell>
                     <TableCell>
                       {rule.isDefault && <Badge variant="default">Default</Badge>}
