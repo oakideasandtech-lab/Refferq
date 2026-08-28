@@ -1,11 +1,24 @@
 import React from 'react';
+import { Plus_Jakarta_Sans, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { db } from '@/lib/prisma';
 import './globals.css';
 
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-sans',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const geistMono = Geist_Mono({
+  variable: '--font-mono',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
 export const metadata = {
-  title: 'Refferq - Modern Affiliate Marketing Platform',
-  description: 'Next-generation affiliate marketing platform with comprehensive tracking, commission management, and payout automation.',
+  title: 'PulseISP Affiliate - Affiliate Marketing Platform',
+  description: 'Affiliate marketing platform for PulseISP with comprehensive tracking, commission management, and payout automation.',
 };
 
 export default async function RootLayout({
@@ -27,12 +40,7 @@ export default async function RootLayout({
   } as React.CSSProperties;
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}>
       <body className="font-sans antialiased" style={dynamicStyles}>
         {children}
         <Toaster />

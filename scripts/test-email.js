@@ -49,7 +49,7 @@ async function testEmailConfiguration() {
     console.log('Please add the missing variables to your .env.local file:');
     console.log('');
     console.log('  RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"');
-    console.log('  RESEND_FROM_EMAIL="Refferq <onboarding@resend.dev>"');
+    console.log('  RESEND_FROM_EMAIL="PulseISP <onboarding@resend.dev>"');
     console.log('  NEXT_PUBLIC_APP_URL="http://localhost:3000"');
     console.log('');
     console.log('Get your Resend API key from: https://resend.com/api-keys');
@@ -90,7 +90,7 @@ async function testEmailConfiguration() {
     const result = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL,
       to: recipientEmail,
-      subject: 'Refferq Email Configuration Test',
+      subject: 'PulseISP Email Configuration Test',
       html: `
         <!DOCTYPE html>
         <html>
@@ -99,7 +99,7 @@ async function testEmailConfiguration() {
           <title>Email Test</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .header { background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
             .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
             .success-box { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; margin: 20px 0; }
             .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
@@ -112,9 +112,9 @@ async function testEmailConfiguration() {
           <div class="content">
             <h2>Success!</h2>
             <div class="success-box">
-              <strong>Your Refferq email configuration is working correctly!</strong>
+              <strong>Your PulseISP email configuration is working correctly!</strong>
             </div>
-            <p>This is a test email sent from your Refferq application to verify that:</p>
+            <p>This is a test email sent from your PulseISP application to verify that:</p>
             <ul>
               <li>✅ Resend API key is valid</li>
               <li>✅ Email service is properly configured</li>
@@ -129,7 +129,7 @@ async function testEmailConfiguration() {
             </ul>
           </div>
           <div class="footer">
-            <p>© ${new Date().getFullYear()} Refferq. All rights reserved.</p>
+            <p>© ${new Date().getFullYear()} PulseISP. All rights reserved.</p>
           </div>
         </body>
         </html>
@@ -169,7 +169,7 @@ async function testEmailConfiguration() {
     } else if (error.message.includes('from')) {
       console.log('💡 Tips:');
       console.log('  - Check RESEND_FROM_EMAIL format: "Name <email@domain.com>"');
-      console.log('  - For development, use: "Refferq <onboarding@resend.dev>"');
+      console.log('  - For development, use: "PulseISP <onboarding@resend.dev>"');
       console.log('  - For production, verify your domain in Resend dashboard');
     } else {
       console.log('💡 Tips:');

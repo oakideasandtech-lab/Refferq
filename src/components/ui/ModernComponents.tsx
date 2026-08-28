@@ -20,7 +20,7 @@ export const RevenueCard = ({
   icon,
   trend,
   trendValue,
-  gradient = 'from-emerald-500 to-teal-600'
+  gradient = 'from-orange-500 to-orange-400'
 }: {
   title: string;
   amount: number;
