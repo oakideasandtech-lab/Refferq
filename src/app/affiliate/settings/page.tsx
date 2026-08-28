@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { NIGERIAN_BANKS } from '@/lib/nigeria-banks';
 import {
   Card,
   CardContent,
@@ -269,11 +270,19 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label>Bank Name</Label>
-              <Input
+              <Select
                 value={settingsForm.bankName}
-                onChange={(e) => setSettingsForm({ ...settingsForm, bankName: e.target.value })}
-                placeholder="e.g. Access Bank"
-              />
+                onValueChange={(v) => setSettingsForm({ ...settingsForm, bankName: v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select your bank" /></SelectTrigger>
+                <SelectContent>
+                  {NIGERIAN_BANKS.map((bank) => (
+                    <SelectItem key={bank.code} value={bank.name}>
+                      {bank.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Account Name</Label>
