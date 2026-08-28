@@ -270,7 +270,9 @@ export async function GET(request: NextRequest) {
                         company: { type: 'string' },
                         country: { type: 'string' },
                         paymentMethod: { type: 'string' },
-                        paymentEmail: { type: 'string', format: 'email' },
+                        bankName: { type: 'string' },
+                        accountName: { type: 'string' },
+                        accountNumber: { type: 'string' },
                     },
                 },
                 ProgramSettingsRequest: {

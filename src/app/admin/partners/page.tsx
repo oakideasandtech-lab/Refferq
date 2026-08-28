@@ -104,8 +104,7 @@ export default function PartnersPage() {
     company: '',
     partnerGroup: 'Default',
     country: 'N/A',
-    payoutMethod: 'PayPal',
-    paypalEmail: '',
+    payoutMethod: 'Bank',
     sendWelcomeEmail: true,
     trackingParameter: 'ref',
   });
@@ -212,8 +211,7 @@ export default function PartnersPage() {
           name: `${newPartner.firstName} ${newPartner.lastName}`.trim(),
           email: newPartner.email,
           company: newPartner.company,
-          payoutMethod: newPartner.payoutMethod,
-          paypalEmail: newPartner.paypalEmail || newPartner.email,
+          payoutMethod: 'Bank',
         }),
       });
 
@@ -226,8 +224,8 @@ export default function PartnersPage() {
         setShowCreateModal(false);
         setNewPartner({
           firstName: '', lastName: '', email: '', company: '',
-          partnerGroup: 'Default', country: 'N/A', payoutMethod: 'PayPal',
-          paypalEmail: '', sendWelcomeEmail: true, trackingParameter: 'ref',
+          partnerGroup: 'Default', country: 'N/A', payoutMethod: 'Bank',
+          sendWelcomeEmail: true, trackingParameter: 'ref',
         });
         fetchPartners();
       } else {
@@ -640,24 +638,14 @@ export default function PartnersPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PayPal">PayPal</SelectItem>
-                      <SelectItem value="Wise">Wise</SelectItem>
                       <SelectItem value="Bank">Bank Transfer</SelectItem>
-                      <SelectItem value="Crypto">Crypto</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="paypalEmail">PayPal Email (Optional)</Label>
-                <Input
-                  id="paypalEmail"
-                  type="email"
-                  value={newPartner.paypalEmail}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPartner({ ...newPartner, paypalEmail: e.target.value })}
-                  placeholder="defaults to partner email"
-                />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Bank transfer details are collected from the partner in their Affiliate Settings.
+              </p>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="sendWelcomeEmail"

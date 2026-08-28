@@ -151,7 +151,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, company, email, country, paymentMethod, paymentEmail } = body;
+    const { name, company, email, country, paymentMethod, bankName, accountName, accountNumber } = body;
 
     // Update user name and email if provided
     const userUpdateData: any = {};
@@ -185,13 +185,15 @@ export async function PUT(request: NextRequest) {
 
       if (company) payoutDetails.company = company.trim();
       if (country) payoutDetails.country = country;
-      if (paymentMethod) payoutDetails.paymentMethod = paymentMethod;
-      if (paymentEmail) payoutDetails.paymentEmail = paymentEmail.trim();
+      payoutDetails.paymentMethod = paymentMethod || 'Bank Transfer';
 
       await prisma.affiliate.update({
         where: { id: user.affiliate.id },
         data: {
-          payoutDetails: payoutDetails
+          payoutDetails: payoutDetails,
+          ...(bankName !== undefined ? { bankName: bankName.trim() } : {}),
+          ...(accountName !== undefined ? { accountName: accountName.trim() } : {}),
+          ...(accountNumber !== undefined ? { accountNumber: accountNumber.trim() } : {}),
         }
       });
     }

@@ -48,9 +48,11 @@ export default function SettingsPage() {
     name: '',
     company: '',
     email: '',
-    country: 'India',
-    paymentMethod: 'PayPal',
-    paymentEmail: '',
+    country: 'Nigeria',
+    paymentMethod: 'Bank Transfer',
+    bankName: '',
+    accountName: '',
+    accountNumber: '',
   });
 
   useEffect(() => {
@@ -69,9 +71,11 @@ export default function SettingsPage() {
           name: data.user?.name || user?.name || '',
           company: pd.company || '',
           email: data.user?.email || user?.email || '',
-          country: pd.country || 'India',
-          paymentMethod: pd.paymentMethod || 'PayPal',
-          paymentEmail: pd.paymentEmail || data.user?.email || '',
+          country: 'Nigeria',
+          paymentMethod: 'Bank Transfer',
+          bankName: data.affiliate?.bankName || '',
+          accountName: data.affiliate?.accountName || '',
+          accountNumber: data.affiliate?.accountNumber || '',
         });
       }
     } catch (error) {
@@ -229,15 +233,7 @@ export default function SettingsPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="India">India</SelectItem>
-                  <SelectItem value="USA">United States</SelectItem>
-                  <SelectItem value="UK">United Kingdom</SelectItem>
-                  <SelectItem value="Canada">Canada</SelectItem>
-                  <SelectItem value="Australia">Australia</SelectItem>
-                  <SelectItem value="Germany">Germany</SelectItem>
-                  <SelectItem value="France">France</SelectItem>
-                  <SelectItem value="Singapore">Singapore</SelectItem>
-                  <SelectItem value="UAE">UAE</SelectItem>
+                  <SelectItem value="Nigeria">Nigeria</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -264,21 +260,35 @@ export default function SettingsPage() {
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PayPal">PayPal</SelectItem>
                   <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                  <SelectItem value="Stripe">Stripe</SelectItem>
-                  <SelectItem value="Wise">Wise</SelectItem>
-                  <SelectItem value="Wire Transfer">Wire Transfer</SelectItem>
-                  <SelectItem value="UPI">UPI</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Payment Email / Account</Label>
+              <Label>Bank Name</Label>
               <Input
-                value={settingsForm.paymentEmail}
-                onChange={(e) => setSettingsForm({ ...settingsForm, paymentEmail: e.target.value })}
-                placeholder="payment@example.com"
+                value={settingsForm.bankName}
+                onChange={(e) => setSettingsForm({ ...settingsForm, bankName: e.target.value })}
+                placeholder="e.g. Access Bank"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Account Name</Label>
+              <Input
+                value={settingsForm.accountName}
+                onChange={(e) => setSettingsForm({ ...settingsForm, accountName: e.target.value })}
+                placeholder="Account holder name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Account Number</Label>
+              <Input
+                value={settingsForm.accountNumber}
+                onChange={(e) => setSettingsForm({ ...settingsForm, accountNumber: e.target.value })}
+                placeholder="0123456789"
               />
             </div>
           </div>
