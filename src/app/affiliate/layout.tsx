@@ -72,8 +72,8 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
     return pathname.startsWith(url);
   };
 
-  const accentColor = brand.brandButtonColor || '#059669';
-  const brandName = brand.companyName || brand.programName || 'Refferq';
+  const accentColor = brand.brandButtonColor || '#f97316';
+  const brandName = brand.companyName || brand.programName || 'PulseISP';
 
   return (
     <Sidebar variant="inset">
@@ -84,9 +84,7 @@ function AffiliateSidebar({ brand }: { brand: BrandSettings }) {
               {brand.companyLogo ? (
                 <img src={brand.companyLogo} alt={brandName} className="h-10 w-10 rounded-xl object-contain" />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: accentColor }}>
-                  <span className="text-lg font-bold">{brandName.charAt(0)}</span>
-                </div>
+                <img src="/logo.png" alt="PulseISP" className="h-10 w-10 rounded-xl object-contain" />
               )}
               <div className="flex flex-col">
                 <span className="text-sm font-bold">{brandName}</span>

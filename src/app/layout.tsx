@@ -19,6 +19,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: 'PulseISP Affiliate - Affiliate Marketing Platform',
   description: 'Affiliate marketing platform for PulseISP with comprehensive tracking, commission management, and payout automation.',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default async function RootLayout({

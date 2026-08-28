@@ -91,7 +91,7 @@ function AdminSidebar({ brand }: { brand: BrandSettings }) {
     return pathname.startsWith(url);
   };
 
-  const brandName = brand.companyName || brand.programName || 'Refferq';
+  const brandName = brand.companyName || brand.programName || 'PulseISP';
 
   return (
     <Sidebar variant="inset">
@@ -103,7 +103,7 @@ function AdminSidebar({ brand }: { brand: BrandSettings }) {
                 {brand.companyLogo ? (
                   <img src={brand.companyLogo} alt={brandName} className="h-8 w-8 rounded-lg object-contain" />
                 ) : (
-                  <span className="text-lg">{brandName.charAt(0).toUpperCase()}</span>
+                  <img src="/logo.png" alt="PulseISP" className="h-8 w-8 rounded-lg object-contain" />
                 )}
               </div>
               <div className="flex flex-col">

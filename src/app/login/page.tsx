@@ -21,7 +21,7 @@ import {
   InputOTPSeparator,
 } from '@/components/ui/input-otp';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Target, Mail, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 
 type Step = 'email' | 'otp';
 
@@ -125,11 +125,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Logo & Branding */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
-            <Target className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">Refferq</h1>
+        <div className="text-center space-y-3">
+          <img
+            src="/logo-with-identity.png"
+            alt="PulseISP"
+            className="mx-auto h-16 w-auto object-contain"
+          />
           <p className="text-sm text-muted-foreground">
             Affiliate Marketing Platform
           </p>
