@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  IndianRupee,
+  Banknote,
   MousePointerClick,
   Target,
   Users,
@@ -48,7 +48,6 @@ import {
   Ban,
   TrendingUp,
   ArrowRight,
-  Banknote,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

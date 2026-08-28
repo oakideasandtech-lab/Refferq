@@ -46,7 +46,7 @@ import {
   ArrowLeft,
   Users,
   Wallet,
-  IndianRupee,
+  Banknote,
   CreditCard,
   Copy,
   ExternalLink,
@@ -616,7 +616,7 @@ export default function PartnerDetailPage() {
                 </Table>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <IndianRupee className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <Banknote className="h-10 w-10 text-muted-foreground/40 mb-3" />
                   <p className="text-sm font-medium text-muted-foreground">No commissions yet</p>
                 </div>
               )}

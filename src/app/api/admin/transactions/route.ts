@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
         eventType: 'PURCHASE',
         amountCents,
         status: 'APPROVED',
-        currency: 'INR',
+        currency: 'NGN',
         eventMetadata: {
           transactionId: transaction.id,
           commissionCents,

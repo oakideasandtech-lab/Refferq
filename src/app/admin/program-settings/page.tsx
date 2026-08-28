@@ -53,7 +53,7 @@ import {
   Pencil,
   Trash2,
   Percent,
-  IndianRupee,
+  Banknote,
   CheckCircle2,
   Globe,
   Code2,
@@ -316,20 +316,16 @@ export default function ProgramSettingsPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <div className="grid gap-2">
               <Label htmlFor="currency">Currency</Label>
-              <Select
-                value={settings.currency}
-                onValueChange={(v) => setSettings({ ...settings, currency: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="INR">INR (₹)</SelectItem>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Banknote className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="currency"
+                  className="pl-9"
+                  value="NGN (₦) — Nigerian Naira"
+                  readOnly
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Only NGN is supported at this time</p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="minimumPayoutThreshold">Min Payout Threshold (cents)</Label>
@@ -438,7 +434,7 @@ export default function ProgramSettingsPage() {
                         {ruleForm.type === 'PERCENTAGE' ? (
                           <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         ) : (
-                          <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Banknote className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         )}
                         <Input
                           type="number"
@@ -586,7 +582,7 @@ export default function ProgramSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label className="text-sm font-medium">Call this when a visitor completes a conversion event</Label>
-                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nRefferq.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. paise / cents)\n  currency: '${settings.currency || 'INR'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleCopySnippet('conversion', `// Track a conversion (e.g. after signup or purchase)\nRefferq.trackConversion({\n  email: customer.email,\n  name: customer.name,\n  amount: 4999,        // amount in smallest unit (e.g. kobo)\n  currency: '${settings.currency || 'NGN'}',\n  orderId: 'ORD-12345' // optional\n});`)}>
                     {copiedSnippet === 'conversion' ? <><CheckCircle2 className="mr-1 h-3.5 w-3.5 text-green-600" />Copied</> : <><Copy className="mr-1 h-3.5 w-3.5" />Copy</>}
                   </Button>
                 </div>
@@ -595,8 +591,8 @@ export default function ProgramSettingsPage() {
 Refferq.trackConversion({
   email: customer.email,
   name: customer.name,
-  amount: 4999,        // amount in smallest unit (e.g. paise / cents)
-  currency: '${settings.currency || 'INR'}',
+  amount: 4999,        // amount in smallest unit (e.g. kobo)
+  currency: '${settings.currency || 'NGN'}',
   orderId: 'ORD-12345' // optional
 });`}
                 </div>

@@ -45,7 +45,7 @@ interface Program {
 
 const emptyForm = {
   name: '', slug: '', description: '', commissionRate: '20', commissionType: 'PERCENTAGE',
-  cookieDuration: '30', currency: 'INR', autoApprove: false, minPayoutCents: '100000',
+  cookieDuration: '30', currency: 'NGN', autoApprove: false, minPayoutCents: '100000',
   payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#6366f1',
 };
 
@@ -154,9 +154,8 @@ export default function ProgramsPage() {
     } catch (error) { console.error('Failed to delete program:', error); }
   };
 
-  const formatCurrency = (cents: number, currency: string = 'INR') => {
-    const symbol = currency === 'INR' ? '\u20B9' : currency === 'USD' ? '$' : currency === 'EUR' ? '\u20AC' : currency;
-    return `${symbol}${(cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 0 })}`;
+  const formatCurrency = (cents: number) => {
+    return `₦${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
   };
 
   const stats = {
@@ -266,7 +265,7 @@ export default function ProgramsPage() {
                         {p.cookieDuration}d
                       </div>
                     </TableCell>
-                    <TableCell>{formatCurrency(p.minPayoutCents, p.currency)}</TableCell>
+                    <TableCell>{formatCurrency(p.minPayoutCents)}</TableCell>
                     <TableCell><Badge variant="outline" className="text-xs">{p.payoutFrequency}</Badge></TableCell>
                     <TableCell>
                       <Badge variant={p.autoApprove ? 'default' : 'outline'} className="text-xs">
@@ -347,15 +346,7 @@ export default function ProgramsPage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Currency</Label>
-                <Select value={form.currency} onValueChange={v => setForm({...form, currency: v})}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="INR">INR (\u20B9)</SelectItem>
-                    <SelectItem value="USD">USD ($)</SelectItem>
-                    <SelectItem value="EUR">EUR (\u20AC)</SelectItem>
-                    <SelectItem value="GBP">GBP (\u00A3)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input value="NGN (₦)" readOnly />
               </div>
               <div className="grid gap-2">
                 <Label>Min Payout (cents)</Label>

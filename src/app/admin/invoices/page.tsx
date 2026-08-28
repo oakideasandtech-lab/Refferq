@@ -20,7 +20,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  FileText, Plus, Eye, IndianRupee, CheckCircle2, Clock, AlertCircle, Trash2,
+  FileText, Plus, Eye, Banknote, CheckCircle2, Clock, AlertCircle, Trash2,
 } from 'lucide-react';
 
 interface Invoice {
@@ -197,7 +197,7 @@ export default function InvoicesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
-            <IndianRupee className="h-4 w-4 text-emerald-500" />
+            <Banknote className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div></CardContent>
         </Card>

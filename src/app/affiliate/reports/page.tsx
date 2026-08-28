@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table';
 import {
   BarChart3,
-  IndianRupee,
+  Banknote,
   TrendingUp,
   Target,
   Users,
@@ -197,7 +197,7 @@ export default function ReportsPage() {
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <IndianRupee className="h-4 w-4 text-emerald-600" />
+                <Banknote className="h-4 w-4 text-emerald-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalEarnings)}</p>

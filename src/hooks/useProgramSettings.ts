@@ -39,7 +39,7 @@ export function useProgramSettings() {
     refresh();
   }, [refresh]);
 
-  const currencySymbol = settings.currencySymbol || (settings.currency === 'INR' ? '₹' : settings.currency === 'USD' ? '$' : settings.currency === 'EUR' ? '€' : settings.currency === 'GBP' ? '£' : '$');
+  const currencySymbol = '₦';
 
   const formatCurrency = useCallback(
     (cents: number) => `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,

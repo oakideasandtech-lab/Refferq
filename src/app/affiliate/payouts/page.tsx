@@ -22,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  IndianRupee,
+  Banknote,
   Clock,
   CheckCircle2,
   Ban,

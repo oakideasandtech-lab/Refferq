@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const {
       event_type,
       amount_cents,
-      currency = 'USD',
+      currency = 'NGN',
       customer_email,
       attribution_key,
       referral_code,

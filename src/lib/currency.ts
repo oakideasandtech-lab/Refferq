@@ -1,23 +1,17 @@
 import { prisma } from './prisma';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
-    'USD': '$',
-    'EUR': '€',
-    'INR': '₹',
-    'GBP': '£',
-    'BGN': 'лв.',
-    'CAD': 'CA$',
-    'AUD': 'A$',
+    'NGN': '₦',
 };
 
 export async function getCurrencySymbol(): Promise<string> {
     try {
         const settings = await prisma.programSettings.findFirst();
-        const currency = settings?.currency || 'USD';
-        return CURRENCY_SYMBOLS[currency] || currency;
+        const currency = settings?.currency || 'NGN';
+        return CURRENCY_SYMBOLS[currency] || '₦';
     } catch (error) {
         console.error('Failed to fetch currency symbol:', error);
-        return '$';
+        return '₦';
     }
 }
 

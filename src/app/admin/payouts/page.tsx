@@ -33,7 +33,7 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  IndianRupee,
+  Banknote,
   ArrowUpRight,
   Ban,
   Download,
