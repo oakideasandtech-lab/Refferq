@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield } from 'lucide-react';
+import { COMPANY_NAME } from '@/lib/company';
 
 export default function PrivacyPage() {
   return (
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             <section className="space-y-2">
               <h3 className="text-base font-semibold">1. Information We Collect</h3>
               <p className="text-muted-foreground">
-                When you sign up as a PulseISP Affiliate Partner, we collect your full name, email address, WhatsApp phone number, company/website details, and payout account details (such as bank details, M-Pesa phone number, or PayPal address).
+                When you sign up as an Affiliate Partner with {COMPANY_NAME}, we collect your full name, email address, WhatsApp phone number, company/website details, and payout account details (such as bank details, M-Pesa phone number, or PayPal address).
               </p>
             </section>
 
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
             <section className="space-y-2">
               <h3 className="text-base font-semibold">3. Data Protection & Security</h3>
               <p className="text-muted-foreground">
-                Your payment details and personal data are stored using industry-standard encryption protocols. We do not sell, rent, or trade your personal information to third parties.
+                Your payment details and personal data are stored using industry-standard encryption protocols. {COMPANY_NAME} does not sell, rent, or trade your personal information to third parties.
               </p>
             </section>
 
@@ -74,7 +74,7 @@ export default function PrivacyPage() {
 
             <div className="pt-4 border-t text-xs text-muted-foreground flex items-center justify-between">
               <span>For general corporate privacy, visit <a href="https://www.pulseisp.com/privacy" target="_blank" rel="noreferrer" className="text-primary underline">pulseisp.com/privacy</a></span>
-              <span>PulseISP Privacy Team</span>
+              <span>© {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.</span>
             </div>
 
           </CardContent>

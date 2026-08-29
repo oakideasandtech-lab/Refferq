@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShieldCheck, FileText } from 'lucide-react';
+import { COMPANY_NAME } from '@/lib/company';
 
 export default function TermsPage() {
   return (
@@ -38,7 +38,7 @@ export default function TermsPage() {
             <section className="space-y-2">
               <h3 className="text-base font-semibold">1. Enrollment in the Partner Network</h3>
               <p className="text-muted-foreground">
-                By registering as an Affiliate Partner with PulseISP ("Company"), you agree to abide by these terms. PulseISP reserves the right to review, approve, or reject any affiliate application at its sole discretion.
+                By registering as an Affiliate Partner with {COMPANY_NAME} ("Company"), you agree to abide by these terms. {COMPANY_NAME} reserves the right to review, approve, or reject any affiliate application at its sole discretion.
               </p>
             </section>
 
@@ -75,13 +75,13 @@ export default function TermsPage() {
             <section className="space-y-2">
               <h3 className="text-base font-semibold">6. Termination</h3>
               <p className="text-muted-foreground">
-                Either party may terminate this agreement at any time. PulseISP reserves the right to suspend or terminate accounts engaging in fraudulent activity without prior notice.
+                Either party may terminate this agreement at any time. {COMPANY_NAME} reserves the right to suspend or terminate accounts engaging in fraudulent activity without prior notice.
               </p>
             </section>
 
             <div className="pt-4 border-t text-xs text-muted-foreground flex items-center justify-between">
               <span>For corporate terms, visit <a href="https://www.pulseisp.com/terms" target="_blank" rel="noreferrer" className="text-primary underline">pulseisp.com/terms</a></span>
-              <span>PulseISP Partner Network</span>
+              <span>© {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.</span>
             </div>
 
           </CardContent>
