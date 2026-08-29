@@ -69,6 +69,12 @@ interface Partner {
   partnerGroup?: string;
   commissionRate: number;
   status: string;
+  phone?: string;
+  website?: string;
+  promotionMethod?: string;
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
   totalClicks: number;
   totalLeads: number;
   totalRevenue: number;
@@ -386,6 +392,41 @@ export default function PartnerDetailPage() {
           Create Payout
         </Button>
       </div>
+
+      {/* Registration & Application Info */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+            <div>
+              <span className="text-xs text-muted-foreground block font-medium mb-0.5">WhatsApp Phone</span>
+              <span className="font-medium text-foreground">{partner.phone || 'Not provided'}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block font-medium mb-0.5">Website / Social Channel</span>
+              {partner.website ? (
+                <a
+                  href={partner.website.startsWith('http') ? partner.website : `https://${partner.website}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary hover:underline inline-flex items-center gap-1 font-medium truncate"
+                >
+                  {partner.website} <ExternalLink className="h-3 w-3 shrink-0" />
+                </a>
+              ) : (
+                <span className="text-muted-foreground">Not provided</span>
+              )}
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block font-medium mb-0.5">Promotion Strategy</span>
+              <Badge variant="outline" className="capitalize mt-0.5">{partner.promotionMethod || 'General Referral'}</Badge>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block font-medium mb-0.5">Payout Bank Details</span>
+              <span className="font-medium text-foreground">{partner.accountNumber ? `${partner.bankName} (${partner.accountNumber})` : 'Not set yet'}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

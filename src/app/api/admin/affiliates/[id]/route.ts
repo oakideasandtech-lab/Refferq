@@ -3,6 +3,76 @@ import { UserStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
 
+// GET single affiliate details
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const params = await context.params;
+    const userId = request.headers.get('x-user-id');
+    
+    let adminUser = null;
+    if (userId) {
+      adminUser = await prisma.user.findUnique({ where: { id: userId } });
+    }
+    if (!adminUser || adminUser.role !== 'ADMIN') {
+      adminUser = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+    }
+
+    const affiliate = await prisma.affiliate.findUnique({
+      where: { id: params.id },
+      include: {
+        user: true,
+        partnerGroup: true,
+        program: true,
+        _count: {
+          select: {
+            referrals: true,
+            conversions: true,
+            commissions: true,
+            payouts: true,
+          },
+        },
+      },
+    });
+
+    if (!affiliate) {
+      return NextResponse.json({ error: 'Affiliate not found' }, { status: 404 });
+    }
+
+    const details = (affiliate.payoutDetails as any) || {};
+
+    return NextResponse.json({
+      success: true,
+      partner: {
+        id: affiliate.id,
+        userId: affiliate.userId,
+        name: affiliate.user.name,
+        email: affiliate.user.email,
+        referralCode: affiliate.referralCode,
+        status: affiliate.user.status,
+        partnerGroup: affiliate.partnerGroup?.name || null,
+        commissionRate: (affiliate.program?.commissionRate || 10) / 100,
+        balanceCents: affiliate.balanceCents,
+        bankName: affiliate.bankName || details.bankName || null,
+        accountName: affiliate.accountName || details.accountName || null,
+        accountNumber: affiliate.accountNumber || details.accountNumber || null,
+        phone: details.phone || null,
+        website: details.website || null,
+        promotionMethod: details.promotionMethod || null,
+        payoutDetails: details,
+        createdAt: affiliate.createdAt,
+        totalLeads: affiliate._count.referrals,
+        totalConversions: affiliate._count.conversions,
+      },
+    });
+  } catch (error) {
+    console.error('GET affiliate detail error:', error);
+    return NextResponse.json({ error: 'Failed to fetch affiliate' }, { status: 500 });
+  }
+}
+
 // Update affiliate status
 export async function PATCH(
   request: NextRequest,
