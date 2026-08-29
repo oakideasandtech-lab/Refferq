@@ -459,7 +459,7 @@ export default function RegisterPage() {
                         htmlFor="terms"
                         className="text-xs text-muted-foreground leading-tight cursor-pointer"
                       >
-                        I agree to the <Link href="/terms" className="text-primary underline">Affiliate Partner Terms & Conditions</Link> and <Link href="/privacy" className="text-primary underline">Privacy Policy</Link>.
+                        I agree to the <Link href="/terms" target="_blank" className="text-primary underline">Affiliate Partner Terms & Conditions</Link> and <Link href="/privacy" target="_blank" className="text-primary underline">Privacy Policy</Link>.
                       </label>
                     </div>
 
