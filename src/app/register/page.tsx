@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 import { useRecaptcha } from '@/hooks/useRecaptcha';
 
-import { getCountryByCurrency, validateCountryPhone, WORLD_COUNTRIES } from '@/lib/countries';
+import { getCountryByCurrency, validateCountryPhone, formatAndTruncatePhone, WORLD_COUNTRIES } from '@/lib/countries';
 
 type Step = 'details' | 'otp' | 'success';
 
@@ -438,11 +438,11 @@ export default function RegisterPage() {
                           type="tel"
                           placeholder={countryConfig.placeholder}
                           value={formData.phone}
-                          maxLength={countryConfig.phonePrefix.length + countryConfig.localDigitCount + 4}
+                          maxLength={countryConfig.phonePrefix.length + countryConfig.nationalDigits + 4}
                           onChange={(e) => {
-                            // Strip any letters or invalid symbols in real-time as the user types
-                            const cleanVal = e.target.value.replace(/[^0-9+\s\-()]/g, '');
-                            setFormData({ ...formData, phone: cleanVal });
+                            // Strip letters & strictly truncate digits beyond country limit in real-time
+                            const truncatedVal = formatAndTruncatePhone(e.target.value, countryConfig);
+                            setFormData({ ...formData, phone: truncatedVal });
                           }}
                           className="pl-9 font-mono text-sm"
                           required

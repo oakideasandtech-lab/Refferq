@@ -148,3 +148,48 @@ export function validateCountryPhone(phoneInput: string, countryConfig: CountryC
     error: `Invalid phone format for ${countryConfig.name}. Requires ${countryConfig.sampleFormat}. You entered ${digitsOnly.length} digits.`,
   };
 }
+
+// Real-time phone formatting and strict truncation engine (prevents typing past country digit limit)
+export function formatAndTruncatePhone(inputVal: string, countryConfig: CountryConfig): string {
+  if (!inputVal) return '';
+
+  // 1. Strip letters and illegal characters (only keep digits and +)
+  let val = inputVal.replace(/[^0-9+]/g, '');
+
+  const prefixDigits = countryConfig.phonePrefix.replace(/\D/g, ''); // e.g. "234"
+
+  // Case A: Input starts with '+' or international prefix digits
+  if (val.startsWith('+') || val.startsWith(prefixDigits)) {
+    let digits = val.replace(/\D/g, '');
+    if (digits.startsWith(prefixDigits)) {
+      let subDigits = digits.slice(prefixDigits.length);
+      // Strip leading 0 if typed right after prefix (e.g. +2340801...)
+      if (subDigits.startsWith('0') && subDigits.length > 1) {
+        subDigits = subDigits.slice(1);
+      }
+      // Truncate subscriber digits to exact country nationalDigits limit
+      if (subDigits.length > countryConfig.nationalDigits) {
+        subDigits = subDigits.slice(0, countryConfig.nationalDigits);
+      }
+      return `${countryConfig.phonePrefix}${subDigits ? ' ' + subDigits : ''}`;
+    }
+    // Just '+' entered or typing initial prefix digits
+    return val.startsWith('+') ? val : `+${val}`;
+  }
+
+  // Case B: Input starts with '0' (Local 0-prefixed format, e.g. 08012345678)
+  if (val.startsWith('0')) {
+    let digits = val.replace(/\D/g, '');
+    if (digits.length > countryConfig.localDigitCount) {
+      digits = digits.slice(0, countryConfig.localDigitCount);
+    }
+    return digits;
+  }
+
+  // Case C: Input typed without leading 0 or + (National format, e.g. 8012345678)
+  let digits = val.replace(/\D/g, '');
+  if (digits.length > countryConfig.nationalDigits) {
+    digits = digits.slice(0, countryConfig.nationalDigits);
+  }
+  return digits;
+}
