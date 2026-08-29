@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { COMPANY_NAME } from './company';
 
 // Initialize Resend with API key only when needed (server-side)
 let resendInstance: Resend | null = null;
@@ -233,7 +234,7 @@ class EmailService {
       </div>
       <div class="footer">
         <p>This email was sent to ${this.escapeHtml(data.email)}</p>
-        <p>© ${new Date().getFullYear()} PulseISP. All rights reserved.</p>
+        <p>© ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.</p>
       </div>
     </body>
     </html>
