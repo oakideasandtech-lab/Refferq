@@ -47,6 +47,7 @@ import {
 import { useRecaptcha } from '@/hooks/useRecaptcha';
 
 import { getCountryByCurrency, validateCountryPhone, formatAndTruncatePhone, WORLD_COUNTRIES } from '@/lib/countries';
+import { trackGa4Event } from '@/lib/ga4';
 
 type Step = 'details' | 'otp' | 'success';
 
@@ -232,6 +233,7 @@ export default function RegisterPage() {
 
       if (res.ok && data.success) {
         setStep('success');
+        trackGa4Event('sign_up', { method: 'email', role: 'AFFILIATE' });
         setTimeout(() => {
           const user = data.user;
           if (user.role === 'ADMIN') {

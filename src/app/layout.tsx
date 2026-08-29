@@ -2,6 +2,7 @@ import React from 'react';
 import { Plus_Jakarta_Sans, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { db } from '@/lib/prisma';
+import { GoogleAnalyticsTracker } from '@/lib/ga4';
 import './globals.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -47,6 +48,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} ${geistMono.variable} antialiased`}>
       <body className="font-sans antialiased" style={dynamicStyles}>
+        <GoogleAnalyticsTracker />
         {children}
         <Toaster />
       </body>
