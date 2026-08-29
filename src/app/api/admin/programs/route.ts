@@ -102,7 +102,7 @@ export async function PUT(request: NextRequest) {
 
     const editableFields = [
       'name', 'slug', 'description', 'commissionRate', 'commissionType',
-      'cookieDuration', 'currency', 'autoApprove', 'minPayoutCents',
+      'cookieDuration', 'currency', 'countryCode', 'countryName', 'autoApprove', 'minPayoutCents',
       'payoutFrequency', 'termsUrl', 'logoUrl', 'brandColor',
     ];
     for (const key of editableFields) {

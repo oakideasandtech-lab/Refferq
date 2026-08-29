@@ -53,6 +53,8 @@ interface ProgramItem {
   name: string;
   slug: string;
   currency: string;
+  countryCode?: string;
+  countryName?: string;
   commissionRate: number;
   isDefault: boolean;
 }
@@ -386,11 +388,18 @@ export default function RegisterPage() {
                             <SelectValue placeholder="Select target market" />
                           </SelectTrigger>
                           <SelectContent>
-                            {activePrograms.map((prog) => (
-                              <SelectItem key={prog.id} value={prog.id}>
-                                {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
-                              </SelectItem>
-                            ))}
+                            {activePrograms.map((prog) => {
+                              const flagMap: Record<string, string> = {
+                                NG: '🇳🇬', KE: '🇰🇪', GH: '🇬🇭', ZA: '🇿🇦', US: '🇺🇸', GB: '🇬🇧',
+                              };
+                              const flag = prog.countryCode ? flagMap[prog.countryCode] || '🌍' : '🌍';
+                              const countryLabel = prog.countryName ? `${flag} ${prog.countryName}` : prog.name;
+                              return (
+                                <SelectItem key={prog.id} value={prog.id}>
+                                  {countryLabel} — {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>

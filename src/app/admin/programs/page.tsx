@@ -20,8 +20,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Layers, Plus, Star, Percent, Clock, Globe, Edit, Trash2,
+  Layers, Plus, Star, Percent, Clock, Globe, Edit, Trash2, MapPin,
 } from 'lucide-react';
+import { getCurrencySymbolForCode } from '@/lib/currency';
 
 interface Program {
   id: string;
@@ -32,6 +33,8 @@ interface Program {
   commissionType: string;
   cookieDuration: number;
   currency: string;
+  countryCode?: string;
+  countryName?: string;
   isActive: boolean;
   isDefault: boolean;
   autoApprove: boolean;
@@ -43,10 +46,20 @@ interface Program {
   createdAt: string;
 }
 
+const COUNTRY_OPTIONS = [
+  { code: 'NG', name: 'Nigeria 🇳🇬', currency: 'NGN', symbol: '₦' },
+  { code: 'KE', name: 'Kenya 🇰🇪', currency: 'KES', symbol: 'KSh' },
+  { code: 'GH', name: 'Ghana 🇬🇭', currency: 'GHS', symbol: '₵' },
+  { code: 'ZA', name: 'South Africa 🇿🇦', currency: 'ZAR', symbol: 'R' },
+  { code: 'US', name: 'United States / Global 🇺🇸', currency: 'USD', symbol: '$' },
+  { code: 'GB', name: 'United Kingdom 🇬🇧', currency: 'GBP', symbol: '£' },
+];
+
 const emptyForm = {
-  name: '', slug: '', description: '', commissionRate: '20', commissionType: 'PERCENTAGE',
-  cookieDuration: '30', currency: 'NGN', autoApprove: false, minPayoutCents: '1000',
-  payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#6366f1',
+  name: '', slug: '', description: '', commissionRate: '10', commissionType: 'PERCENTAGE',
+  cookieDuration: '30', currency: 'NGN', countryCode: 'NG', countryName: 'Nigeria',
+  autoApprove: false, minPayoutCents: '5000', payoutFrequency: 'MONTHLY',
+  termsUrl: '', logoUrl: '', brandColor: '#6366f1',
 };
 
 export default function ProgramsPage() {
@@ -83,13 +96,25 @@ export default function ProgramsPage() {
       name: p.name, slug: p.slug, description: p.description || '',
       commissionRate: String(p.commissionRate), commissionType: p.commissionType,
       cookieDuration: String(p.cookieDuration), currency: p.currency,
+      countryCode: p.countryCode || 'NG', countryName: p.countryName || 'Nigeria',
       autoApprove: p.autoApprove,
-      // DB stores kobo/cents — show the user clean Naira (divide by 100)
       minPayoutCents: String(Math.round(p.minPayoutCents / 100)),
       payoutFrequency: p.payoutFrequency, termsUrl: p.termsUrl || '',
       logoUrl: p.logoUrl || '', brandColor: p.brandColor || '#6366f1',
     });
     setDialogOpen(true);
+  };
+
+  const handleCountryChange = (code: string) => {
+    const matched = COUNTRY_OPTIONS.find(c => c.code === code);
+    if (matched) {
+      setForm(prev => ({
+        ...prev,
+        countryCode: matched.code,
+        countryName: matched.name.split(' ')[0],
+        currency: matched.currency,
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -99,8 +124,8 @@ export default function ProgramsPage() {
         name: form.name, slug: form.slug, description: form.description || null,
         commissionRate: parseFloat(form.commissionRate), commissionType: form.commissionType,
         cookieDuration: parseInt(form.cookieDuration), currency: form.currency,
+        countryCode: form.countryCode, countryName: form.countryName,
         autoApprove: form.autoApprove,
-        // User enters Naira — convert to kobo/cents for DB storage
         minPayoutCents: Math.round(parseFloat(form.minPayoutCents) * 100),
         payoutFrequency: form.payoutFrequency,
         termsUrl: form.termsUrl || null, logoUrl: form.logoUrl || null,
@@ -121,7 +146,8 @@ export default function ProgramsPage() {
         alert(data.error || 'Failed to save program');
       }
     } catch (error) {
-      console.error('Failed to save program:', error);
+      console.error('Save program error:', error);
+      alert('Failed to save program');
     } finally {
       setSaving(false);
     }
@@ -129,37 +155,40 @@ export default function ProgramsPage() {
 
   const toggleActive = async (id: string, isActive: boolean) => {
     try {
-      await fetch('/api/admin/programs', {
+      const res = await fetch('/api/admin/programs', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isActive }),
       });
-      await fetchPrograms();
-    } catch (error) { console.error('Failed to toggle program:', error); }
+      if (res.ok) {
+        setPrograms(prev => prev.map(p => p.id === id ? { ...p, isActive } : p));
+      }
+    } catch (error) {
+      console.error('Failed to toggle program active state:', error);
+    }
   };
 
   const setDefault = async (id: string) => {
     try {
-      await fetch('/api/admin/programs', {
+      const res = await fetch('/api/admin/programs', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, isDefault: true }),
       });
-      // Unset all others locally — API should handle this too
-      await fetchPrograms();
-    } catch (error) { console.error('Failed to set default:', error); }
+      if (res.ok) await fetchPrograms();
+    } catch (error) {
+      console.error('Failed to set default program:', error);
+    }
   };
 
   const deleteProgram = async (id: string) => {
-    if (!confirm('Delete this program? This cannot be undone.')) return;
+    if (!confirm('Are you sure you want to delete this program?')) return;
     try {
-      await fetch(`/api/admin/programs?id=${id}`, { method: 'DELETE' });
-      await fetchPrograms();
-    } catch (error) { console.error('Failed to delete program:', error); }
-  };
-
-  const formatCurrency = (cents: number) => {
-    return `₦${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+      const res = await fetch(`/api/admin/programs?id=${id}`, { method: 'DELETE' });
+      if (res.ok) await fetchPrograms();
+    } catch (error) {
+      console.error('Failed to delete program:', error);
+    }
   };
 
   const stats = {
@@ -171,27 +200,30 @@ export default function ProgramsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-3">{[1,2,3].map(i => <Skeleton key={i} className="h-24" />)}</div>
-        <Skeleton className="h-96" />
+        <Skeleton className="h-10 w-48" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Skeleton className="h-24" /><Skeleton className="h-24" /><Skeleton className="h-24" />
+        </div>
+        <Skeleton className="h-64" />
       </div>
     );
   }
 
+  const currentCurrencySymbol = getCurrencySymbolForCode(form.currency);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
-          <p className="text-muted-foreground">Manage multiple affiliate programs with different commission structures</p>
+          <h1 className="text-2xl font-bold tracking-tight">Affiliate Programs</h1>
+          <p className="text-sm text-muted-foreground">Manage country campaigns, commission rates, and payout thresholds</p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Program
+        <Button onClick={openCreate} className="gap-2">
+          <Plus className="h-4 w-4" /> Create Program
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Programs</CardTitle>
@@ -201,7 +233,7 @@ export default function ProgramsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Programs</CardTitle>
             <Globe className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{stats.active}</div></CardContent>
@@ -218,7 +250,7 @@ export default function ProgramsPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Programs</CardTitle>
-          <CardDescription>Configure commission rates, cookie durations, and payout rules per program</CardDescription>
+          <CardDescription>Configure commission rates, target countries, and payout rules per campaign</CardDescription>
         </CardHeader>
         <CardContent>
           {programs.length === 0 ? (
@@ -231,12 +263,11 @@ export default function ProgramsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Program</TableHead>
+                  <TableHead>Program & Country</TableHead>
                   <TableHead>Commission</TableHead>
-                  <TableHead>Cookie</TableHead>
+                  <TableHead>Currency</TableHead>
                   <TableHead>Min Payout</TableHead>
                   <TableHead>Frequency</TableHead>
-                  <TableHead>Auto-Approve</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -247,35 +278,38 @@ export default function ProgramsPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {p.brandColor && (
-                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: p.brandColor }} />
+                          <div className="h-3.5 w-3.5 rounded-full shrink-0" style={{ backgroundColor: p.brandColor }} />
                         )}
                         <div>
-                          <p className="font-medium">{p.name}</p>
+                          <p className="font-semibold text-sm flex items-center gap-1.5">
+                            {p.name}
+                            {p.countryName && (
+                              <Badge variant="outline" className="text-[10px] font-normal px-1.5 py-0">
+                                {p.countryName}
+                              </Badge>
+                            )}
+                          </p>
                           <p className="text-xs text-muted-foreground font-mono">/{p.slug}</p>
                         </div>
-                        {p.isDefault && <Badge variant="secondary" className="text-xs">Default</Badge>}
+                        {p.isDefault && <Badge variant="secondary" className="text-xs ml-1">Default</Badge>}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Percent className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-semibold">{p.commissionRate}%</span>
+                        <span className="font-semibold text-sm">{p.commissionRate}%</span>
                         <span className="text-xs text-muted-foreground">{p.commissionType}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        {p.cookieDuration}d
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatCurrency(p.minPayoutCents)}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-xs">{p.payoutFrequency}</Badge></TableCell>
-                    <TableCell>
-                      <Badge variant={p.autoApprove ? 'default' : 'outline'} className="text-xs">
-                        {p.autoApprove ? 'Yes' : 'Manual'}
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {getCurrencySymbolForCode(p.currency)} {p.currency}
                       </Badge>
                     </TableCell>
+                    <TableCell className="font-medium text-sm">
+                      {getCurrencySymbolForCode(p.currency)}{(p.minPayoutCents / 100).toLocaleString()}
+                    </TableCell>
+                    <TableCell><Badge variant="outline" className="text-xs">{p.payoutFrequency}</Badge></TableCell>
                     <TableCell>
                       <Switch checked={p.isActive} onCheckedChange={v => toggleActive(p.id, v)} />
                     </TableCell>
@@ -306,26 +340,48 @@ export default function ProgramsPage() {
 
       {/* Create/Edit Program Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Program' : 'Create Program'}</DialogTitle>
-            <DialogDescription>{editing ? 'Update program configuration' : 'Set up a new affiliate program'}</DialogDescription>
+            <DialogDescription>{editing ? 'Update program configuration' : 'Set up a new country or campaign affiliate program'}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            
+            {/* Target Country Selector */}
+            <div className="grid gap-2 bg-muted/40 p-3 rounded-lg border">
+              <Label className="font-semibold flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-primary" /> Target Country & Currency *
+              </Label>
+              <Select value={form.countryCode} onValueChange={handleCountryChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRY_OPTIONS.map(c => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.name} ({c.currency} • {c.symbol})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Program Name *</Label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Premium Partners" />
+                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="e.g. Kenya Launch Campaign" />
               </div>
               <div className="grid gap-2">
                 <Label>Slug *</Label>
-                <Input value={form.slug} onChange={e => setForm({...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} placeholder="premium-partners" />
+                <Input value={form.slug} onChange={e => setForm({...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} placeholder="e.g. ke-affiliate" />
               </div>
             </div>
+
             <div className="grid gap-2">
               <Label>Description</Label>
-              <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe this program..." />
+              <Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe target market or promo terms..." />
             </div>
+
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Commission Rate (%)</Label>
@@ -336,9 +392,8 @@ export default function ProgramsPage() {
                 <Select value={form.commissionType} onValueChange={v => setForm({...form, commissionType: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PERCENTAGE">Percentage</SelectItem>
+                    <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
                     <SelectItem value="FIXED">Fixed Amount</SelectItem>
-                    <SelectItem value="TIERED">Tiered</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -347,13 +402,14 @@ export default function ProgramsPage() {
                 <Input type="number" value={form.cookieDuration} onChange={e => setForm({...form, cookieDuration: e.target.value})} />
               </div>
             </div>
+
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Currency</Label>
-                <Input value="NGN (₦)" readOnly />
+                <Input value={`${form.currency} (${currentCurrencySymbol})`} readOnly className="bg-muted font-semibold" />
               </div>
               <div className="grid gap-2">
-                <Label>Min Payout (₦)</Label>
+                <Label>Min Payout ({currentCurrencySymbol})</Label>
                 <Input type="number" min="0" value={form.minPayoutCents} onChange={e => setForm({...form, minPayoutCents: e.target.value})} placeholder="e.g. 5000" />
               </div>
               <div className="grid gap-2">
@@ -364,32 +420,11 @@ export default function ProgramsPage() {
                     <SelectItem value="WEEKLY">Weekly</SelectItem>
                     <SelectItem value="BIWEEKLY">Bi-Weekly</SelectItem>
                     <SelectItem value="MONTHLY">Monthly</SelectItem>
-                    <SelectItem value="QUARTERLY">Quarterly</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Brand Color</Label>
-                <div className="flex gap-2">
-                  <Input type="color" value={form.brandColor} onChange={e => setForm({...form, brandColor: e.target.value})} className="w-14 h-10 p-1" />
-                  <Input value={form.brandColor} onChange={e => setForm({...form, brandColor: e.target.value})} className="flex-1 font-mono" />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label>Logo URL</Label>
-                <Input value={form.logoUrl} onChange={e => setForm({...form, logoUrl: e.target.value})} placeholder="https://..." />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>Terms URL</Label>
-              <Input value={form.termsUrl} onChange={e => setForm({...form, termsUrl: e.target.value})} placeholder="https://yoursite.com/terms" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={form.autoApprove as boolean} onCheckedChange={v => setForm({...form, autoApprove: v})} />
-              <Label>Auto-approve new affiliates</Label>
-            </div>
+
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>

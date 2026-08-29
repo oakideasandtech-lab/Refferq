@@ -646,6 +646,8 @@ model Program {
   commissionType    String   @default("PERCENTAGE") @map("commission_type")
   cookieDuration    Int      @default(30) @map("cookie_duration") // days
   currency          String   @default("NGN")
+  countryCode       String?  @default("NG") @map("country_code")
+  countryName       String?  @default("Nigeria") @map("country_name")
   isActive          Boolean  @default(true) @map("is_active")
   isDefault         Boolean  @default(false) @map("is_default")
   autoApprove       Boolean  @default(false) @map("auto_approve")

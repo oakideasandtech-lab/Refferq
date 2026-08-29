@@ -13,6 +13,8 @@ export async function GET() {
         name: true,
         slug: true,
         currency: true,
+        countryCode: true,
+        countryName: true,
         commissionRate: true,
         minPayoutCents: true,
         isDefault: true,
