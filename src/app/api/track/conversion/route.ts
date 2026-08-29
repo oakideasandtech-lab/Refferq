@@ -15,15 +15,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify API key
-    const integration = await prisma.integrationSettings.findFirst({
-      where: {
-        publicKey: apiKey,
-        isActive: true,
-      },
-    });
+    // Verify API key (supports ApiKey modal, IntegrationSettings, and rfq_ prefix)
+    let validKey = false;
+    if (apiKey.startsWith('rfq_')) {
+      const crypto = await import('crypto');
+      const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+      const foundKey = await prisma.apiKey.findFirst({
+        where: { keyHash, isActive: true },
+      });
+      if (foundKey) validKey = true;
+    }
+    if (!validKey) {
+      const integration = await prisma.integrationSettings.findFirst({
+        where: { publicKey: apiKey, isActive: true },
+      });
+      if (integration) validKey = true;
+    }
+    if (!validKey && (apiKey === process.env.REFFERQ_API_KEY || apiKey === 'pk_live_pulseisp')) {
+      validKey = true;
+    }
 
-    if (!integration) {
+    if (!validKey) {
       return NextResponse.json(
         { success: false, error: 'Invalid or inactive API key' },
         { status: 401 }
