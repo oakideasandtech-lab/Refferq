@@ -36,7 +36,22 @@ import {
   CreditCard,
   Activity,
   Eye,
+  Globe,
 } from 'lucide-react';
+import { getCurrencySymbolForCode } from '@/lib/currency';
+
+interface ProgramStat {
+  id: string;
+  name: string;
+  slug: string;
+  currency: string;
+  countryCode: string;
+  countryName: string;
+  commissionRate: number;
+  affiliateCount: number;
+  revenueCents: number;
+  commissionCents: number;
+}
 
 interface DashboardStats {
   totalRevenue: number;
@@ -47,6 +62,7 @@ interface DashboardStats {
   totalReferredCustomers: number;
   totalAffiliates: number;
   pendingReferrals: number;
+  programStats?: ProgramStat[];
 }
 
 interface TopAffiliate {
@@ -108,6 +124,7 @@ export default function AdminDashboardPage() {
           totalReferredCustomers: statsData.stats.approvedReferrals || 0,
           totalAffiliates: statsData.stats.totalAffiliates || 0,
           pendingReferrals: statsData.stats.pendingReferrals || 0,
+          programStats: statsData.stats.programStats || [],
         });
         if (statsData.currencySymbol) setCurrencySymbol(statsData.currencySymbol);
       }
@@ -255,6 +272,76 @@ export default function AdminDashboardPage() {
             </Card>
           ))}
         </div>
+
+        {/* Regional Campaigns & Multi-Currency Overview */}
+        {stats?.programStats && stats.programStats.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-primary" />
+                    Regional Campaign & Multi-Currency Overview
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Live revenue, commissions, and partner breakdown per active country program
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/admin/programs')}>
+                  Manage Programs <ArrowRight className="ml-1 h-3 w-3" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {stats.programStats.map((prog) => {
+                  const flagMap: Record<string, string> = {
+                    NG: '🇳🇬', KE: '🇰🇪', GH: '🇬🇭', ZA: '🇿🇦', US: '🇺🇸', GB: '🇬🇧', EU: '🇪🇺',
+                  };
+                  const flag = flagMap[prog.countryCode] || '🌍';
+                  const symbol = getCurrencySymbolForCode(prog.currency);
+
+                  return (
+                    <div key={prog.id} className="rounded-xl border bg-muted/30 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{flag}</span>
+                          <div>
+                            <p className="font-semibold text-sm leading-tight">{prog.name}</p>
+                            <p className="text-[11px] text-muted-foreground font-mono">/{prog.slug}</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs font-mono">
+                          {prog.currency} ({symbol})
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t">
+                        <div>
+                          <span className="text-muted-foreground block">Revenue</span>
+                          <span className="font-bold text-foreground text-sm">
+                            {symbol}{(prog.revenueCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block">Commissions</span>
+                          <span className="font-bold text-emerald-600 text-sm">
+                            {symbol}{(prog.commissionCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                        <span>{prog.affiliateCount} Active Partners</span>
+                        <span>{prog.commissionRate}% Rate</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Activity Overview Row */}
         <div className="grid gap-4 md:grid-cols-3">

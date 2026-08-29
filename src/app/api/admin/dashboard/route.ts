@@ -78,6 +78,46 @@ export async function GET(request: NextRequest) {
       totalEstimatedCommission += commissionInCents;
     });
 
+    // Calculate program-by-program regional multi-currency stats
+    const programs = await prisma.program.findMany({
+      where: { isActive: true },
+      include: {
+        affiliates: {
+          select: { id: true },
+        },
+      },
+    });
+
+    const programStats = await Promise.all(
+      programs.map(async (p) => {
+        const affiliateIds = p.affiliates.map((a) => a.id);
+
+        const [convSum, commSum] = await Promise.all([
+          prisma.conversion.aggregate({
+            where: affiliateIds.length > 0 ? { affiliateId: { in: affiliateIds } } : { id: 'none' },
+            _sum: { amountCents: true },
+          }),
+          prisma.commission.aggregate({
+            where: affiliateIds.length > 0 ? { affiliateId: { in: affiliateIds } } : { id: 'none' },
+            _sum: { amountCents: true },
+          }),
+        ]);
+
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          currency: p.currency,
+          countryCode: p.countryCode || 'NG',
+          countryName: p.countryName || 'Nigeria',
+          commissionRate: p.commissionRate,
+          affiliateCount: p.affiliates.length,
+          revenueCents: convSum._sum.amountCents || 0,
+          commissionCents: commSum._sum.amountCents || 0,
+        };
+      })
+    );
+
     const stats = {
       totalAffiliates,
       totalUsers,
@@ -85,9 +125,10 @@ export async function GET(request: NextRequest) {
       totalConversions,
       pendingReferrals,
       approvedReferrals,
-      totalRevenue: totalRevenue._sum?.amountCents || 0, // Actual transaction revenue
-      totalEstimatedRevenue, // Estimated revenue from all leads
-      totalEstimatedCommission, // Total commission to be paid
+      totalRevenue: totalRevenue._sum?.amountCents || 0,
+      totalEstimatedRevenue,
+      totalEstimatedCommission,
+      programStats,
     };
 
     const currencySymbol = await getCurrencySymbol();
