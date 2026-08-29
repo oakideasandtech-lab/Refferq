@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import {
   SidebarProvider,
   Sidebar,
@@ -247,9 +248,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-4 w-4" />
-              </Button>
+              <NotificationCenter />
             </div>
           </div>
         </header>
