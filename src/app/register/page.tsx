@@ -376,27 +376,32 @@ export default function RegisterPage() {
                       </div>
                     </div>
 
-                    {/* Dynamic Target Market / Country Program Selector */}
+                    {/* Dynamic Country Selector (Mapped from Active Programs) */}
                     {activePrograms.length > 0 && (
                       <div className="space-y-1.5">
-                        <Label htmlFor="program">Target Market / Program *</Label>
+                        <Label htmlFor="program">Country *</Label>
                         <Select
                           value={selectedProgramId}
                           onValueChange={(v) => setSelectedProgramId(v)}
                         >
                           <SelectTrigger id="program">
-                            <SelectValue placeholder="Select target market" />
+                            <SelectValue placeholder="Select Country" />
                           </SelectTrigger>
                           <SelectContent>
                             {activePrograms.map((prog) => {
-                              const flagMap: Record<string, string> = {
-                                NG: '🇳🇬', KE: '🇰🇪', GH: '🇬🇭', ZA: '🇿🇦', US: '🇺🇸', GB: '🇬🇧',
+                              const currencyCountryMap: Record<string, { flag: string; country: string }> = {
+                                NGN: { flag: '🇳🇬', country: 'Nigeria' },
+                                KES: { flag: '🇰🇪', country: 'Kenya' },
+                                GHS: { flag: '🇬🇭', country: 'Ghana' },
+                                ZAR: { flag: '🇿🇦', country: 'South Africa' },
+                                USD: { flag: '🇺🇸', country: 'Global / International' },
+                                EUR: { flag: '🇪🇺', country: 'Europe' },
+                                GBP: { flag: '🇬🇧', country: 'United Kingdom' },
                               };
-                              const flag = prog.countryCode ? flagMap[prog.countryCode] || '🌍' : '🌍';
-                              const countryLabel = prog.countryName ? `${flag} ${prog.countryName}` : prog.name;
+                              const meta = currencyCountryMap[prog.currency] || { flag: '🌍', country: prog.name };
                               return (
                                 <SelectItem key={prog.id} value={prog.id}>
-                                  {countryLabel} — {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
+                                  {meta.flag} {meta.country} — {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
                                 </SelectItem>
                               );
                             })}
