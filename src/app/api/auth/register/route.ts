@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, name, role } = body;
+    const { email, name, role, phone, website, promotionMethod } = body;
 
     // Validate required fields
-    if (!email || !name) {
+    if (!email || !name || !phone) {
       return NextResponse.json(
-        { success: false, message: 'Email and name are required' },
+        { success: false, message: 'Name, email, and phone number (WhatsApp) are required' },
         { status: 400 }
       );
     }
@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
       password: randomPassword,
       name: name.trim(),
       role: userRole,
+      phone: phone ? phone.trim() : undefined,
+      website: website ? website.trim() : undefined,
+      promotionMethod: promotionMethod || undefined,
     });
 
     if (!result.success) {

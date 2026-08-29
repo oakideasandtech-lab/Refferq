@@ -19,7 +19,10 @@ export interface RegisterData {
   email: string;
   password: string;
   name: string;
-  role: string; // 'affiliate' or 'admin' from the form
+  role: string;
+  phone?: string;
+  website?: string;
+  promotionMethod?: string;
 }
 
 class AuthService {
@@ -54,7 +57,6 @@ class AuthService {
       const initialStatus = userRoleLower === 'admin' ? 'ACTIVE' : 'PENDING';
 
       // Create user using prisma client directly or db service
-      // We'll use prisma client here since we've already hashed the password
       const user = await prisma.user.create({
         data: {
           email: data.email,
@@ -73,7 +75,11 @@ class AuthService {
           data: {
             userId: user.id,
             referralCode,
-            payoutDetails: {},
+            payoutDetails: {
+              phone: data.phone || null,
+              website: data.website || null,
+              promotionMethod: data.promotionMethod || null,
+            },
             balanceCents: 0
           }
         });
