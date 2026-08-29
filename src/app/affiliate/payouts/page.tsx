@@ -48,6 +48,7 @@ export default function PayoutsPage() {
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
+  const [symbol, setSymbol] = useState(currencySymbol);
 
   useEffect(() => {
     if (!authLoading && user) fetchPayouts();
@@ -65,6 +66,7 @@ export default function PayoutsPage() {
       if (payData.success) setPayouts(payData.payouts || []);
       if (profileData.success) {
         setBalance(profileData.affiliate?.balanceCents || 0);
+        if (profileData.currencySymbol) setSymbol(profileData.currencySymbol);
       }
     } catch (error) {
       console.error('Failed to fetch payouts:', error);
@@ -77,7 +79,7 @@ export default function PayoutsPage() {
     new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
 
   const formatCurrency = (cents: number) =>
-    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `${symbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const getStatusBadge = (status: string) => {
     const map: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
