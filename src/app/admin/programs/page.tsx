@@ -23,6 +23,7 @@ import {
   Layers, Plus, Star, Percent, Clock, Globe, Edit, Trash2,
 } from 'lucide-react';
 import { getCurrencySymbolForCode } from '@/lib/currency';
+import { DEFAULT_PROGRAM_LOGO } from '@/lib/logo';
 
 interface Program {
   id: string;
@@ -59,7 +60,7 @@ const CURRENCY_COUNTRY_MAP: Record<string, { countryCode: string; countryName: s
 const emptyForm = {
   name: '', slug: '', description: '', commissionRate: '10', commissionType: 'PERCENTAGE',
   cookieDuration: '30', currency: 'NGN', autoApprove: false, minPayoutCents: '5000',
-  payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#F97316',
+  payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: DEFAULT_PROGRAM_LOGO, brandColor: '#F97316',
 };
 
 export default function ProgramsPage() {
@@ -99,7 +100,7 @@ export default function ProgramsPage() {
       autoApprove: p.autoApprove,
       minPayoutCents: String(Math.round(p.minPayoutCents / 100)),
       payoutFrequency: p.payoutFrequency, termsUrl: p.termsUrl || '',
-      logoUrl: p.logoUrl || '', brandColor: p.brandColor || '#F97316',
+      logoUrl: p.logoUrl || DEFAULT_PROGRAM_LOGO, brandColor: p.brandColor || '#F97316',
     });
     setDialogOpen(true);
   };
@@ -286,9 +287,8 @@ export default function ProgramsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-xs">
-                        <Percent className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-semibold">% {p.commissionRate}</span>
-                        <span className="text-muted-foreground font-mono uppercase">{p.commissionType}</span>
+                        <span className="font-semibold">{p.commissionRate}%</span>
+                        <span className="text-muted-foreground font-mono uppercase">({p.commissionType})</span>
                       </div>
                     </TableCell>
                     <TableCell>

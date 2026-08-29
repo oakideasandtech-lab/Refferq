@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { DEFAULT_PROGRAM_LOGO } from '@/lib/logo';
 
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
         minPayoutCents: minPayoutCents || 100000,
         payoutFrequency: payoutFrequency || 'MONTHLY',
         termsUrl: termsUrl || null,
-        logoUrl: logoUrl || null,
+        logoUrl: logoUrl || DEFAULT_PROGRAM_LOGO,
         brandColor: brandColor || '#10b981',
       },
     });
