@@ -48,11 +48,22 @@ import { useRecaptcha } from '@/hooks/useRecaptcha';
 
 type Step = 'details' | 'otp' | 'success';
 
+interface ProgramItem {
+  id: string;
+  name: string;
+  slug: string;
+  currency: string;
+  commissionRate: number;
+  isDefault: boolean;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const { verifyRecaptcha } = useRecaptcha('register');
 
   const [step, setStep] = useState<Step>('details');
+  const [activePrograms, setActivePrograms] = useState<ProgramItem[]>([]);
+  const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,6 +76,23 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
+  React.useEffect(() => {
+    async function loadActivePrograms() {
+      try {
+        const res = await fetch('/api/programs/public');
+        const data = await res.json();
+        if (data.success && data.programs) {
+          setActivePrograms(data.programs);
+          const defaultProg = data.programs.find((p: ProgramItem) => p.isDefault) || data.programs[0];
+          if (defaultProg) setSelectedProgramId(defaultProg.id);
+        }
+      } catch (err) {
+        console.error('Failed to load active programs:', err);
+      }
+    }
+    loadActivePrograms();
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +119,7 @@ export default function RegisterPage() {
         return;
       }
 
-      // 2. Register the user with partner details
+      // 2. Register the user with partner details & assigned program
       const registerRes = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,6 +129,7 @@ export default function RegisterPage() {
           phone: formData.phone.trim(),
           website: formData.website.trim(),
           promotionMethod: formData.promotionMethod,
+          programId: selectedProgramId || undefined,
           role: 'AFFILIATE',
         }),
       });
@@ -344,6 +373,28 @@ export default function RegisterPage() {
                         />
                       </div>
                     </div>
+
+                    {/* Dynamic Target Market / Country Program Selector */}
+                    {activePrograms.length > 0 && (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="program">Target Market / Program *</Label>
+                        <Select
+                          value={selectedProgramId}
+                          onValueChange={(v) => setSelectedProgramId(v)}
+                        >
+                          <SelectTrigger id="program">
+                            <SelectValue placeholder="Select target market" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {activePrograms.map((prog) => (
+                              <SelectItem key={prog.id} value={prog.id}>
+                                {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
                     {/* Website / Social Channel / Company */}
                     <div className="space-y-1.5">

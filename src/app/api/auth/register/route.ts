@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, name, role, phone, website, promotionMethod } = body;
+    const { email, name, role, phone, website, promotionMethod, programId } = body;
 
     // Validate required fields
     if (!email || !name || !phone) {
@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
       phone: phone ? phone.trim() : undefined,
       website: website ? website.trim() : undefined,
       promotionMethod: promotionMethod || undefined,
+      programId: programId || undefined,
     });
 
     if (!result.success) {

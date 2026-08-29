@@ -23,6 +23,7 @@ export interface RegisterData {
   phone?: string;
   website?: string;
   promotionMethod?: string;
+  programId?: string;
 }
 
 class AuthService {
@@ -75,6 +76,7 @@ class AuthService {
           data: {
             userId: user.id,
             referralCode,
+            programId: data.programId || null,
             payoutDetails: {
               phone: data.phone || null,
               website: data.website || null,
