@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft, Shield } from 'lucide-react';
 import { COMPANY_NAME } from '@/lib/company';
 
 export default function PrivacyPage() {
