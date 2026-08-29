@@ -122,17 +122,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Calculate commission
-    const commissionRules = await db.getCommissionRules();
-    let applicableRule = commissionRules.find((rule: any) => rule.isDefault);
+    // Calculate commission using active Program rate (e.g. Nigeria Expansion 10%)
+    const affiliateWithProg = await prisma.affiliate.findUnique({
+      where: { id: affiliate.id },
+      include: { program: true },
+    });
+    const activeProgram = affiliateWithProg?.program 
+      || await prisma.program.findFirst({ where: { isDefault: true, isActive: true } })
+      || await prisma.program.findFirst({ where: { isActive: true } });
 
-    const commissionRate = applicableRule?.value || 15;
+    const commissionRate = activeProgram?.commissionRate ?? 10;
+    const commissionType = activeProgram?.commissionType || 'PERCENTAGE';
     let commissionAmount = 0;
 
-    if (applicableRule?.type === 'PERCENTAGE' && amount_cents) {
+    if (commissionType === 'PERCENTAGE' && amount_cents) {
       commissionAmount = Math.floor((amount_cents * commissionRate) / 100);
-    } else if (applicableRule?.type === 'FIXED') {
-      commissionAmount = commissionRate;
+    } else {
+      commissionAmount = Math.round(commissionRate * 100);
     }
 
     // ─── Commission Hold Period ─────────────────────────────────

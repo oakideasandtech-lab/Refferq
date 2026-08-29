@@ -381,141 +381,44 @@ export default function ProgramSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Commission Rules */}
+      {/* Active Program & Rates */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Percent className="h-5 w-5" />
-                Commission Rules
+                Active Program & Commission Structure
               </CardTitle>
-              <CardDescription>Define how commissions are calculated</CardDescription>
+              <CardDescription>
+                Commissions are managed per Program (e.g. Nigeria Expansion, regional campaigns)
+              </CardDescription>
             </div>
-            <Dialog open={ruleDialog} onOpenChange={setRuleDialog}>
-              <DialogTrigger asChild>
-                <Button variant="outline" onClick={openCreateRule}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Rule
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{editingRule ? 'Edit Rule' : 'New Commission Rule'}</DialogTitle>
-                  <DialogDescription>
-                    {editingRule ? 'Update commission rule details' : 'Create a new commission calculation rule'}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label>Rule Name</Label>
-                    <Input
-                      value={ruleForm.name}
-                      onChange={(e) => setRuleForm({ ...ruleForm, name: e.target.value })}
-                      placeholder="e.g., Standard Commission"
-                    />
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="grid gap-2">
-                      <Label>Type</Label>
-                      <Select value={ruleForm.type} onValueChange={(v) => setRuleForm({ ...ruleForm, type: v })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PERCENTAGE">Percentage</SelectItem>
-                          <SelectItem value="FLAT">Flat Amount</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Value</Label>
-                      <div className="relative">
-                        {ruleForm.type === 'PERCENTAGE' ? (
-                          <Percent className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Banknote className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        )}
-                        <Input
-                          type="number"
-                          className={ruleForm.type === 'FLAT' ? 'pl-9' : ''}
-                          value={ruleForm.value}
-                          onChange={(e) => setRuleForm({ ...ruleForm, value: e.target.value })}
-                          placeholder={ruleForm.type === 'PERCENTAGE' ? '10' : '500'}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={ruleForm.isDefault}
-                      onCheckedChange={(v) => setRuleForm({ ...ruleForm, isDefault: v })}
-                    />
-                    <Label>Set as default rule</Label>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setRuleDialog(false)}>Cancel</Button>
-                  <Button onClick={handleSaveRule} disabled={savingRule || !ruleForm.name || !ruleForm.value}>
-                    {savingRule ? 'Saving...' : editingRule ? 'Update' : 'Create'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" asChild>
+              <a href="/admin/programs">
+                Manage Programs
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {settings.commissionRules.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Percent className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No commission rules</h3>
-              <p className="text-sm text-muted-foreground">Create your first commission rule to get started</p>
+          <div className="rounded-lg border p-4 bg-muted/30 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-base">Nigeria Expansion</h4>
+                <Badge variant="default">Default Active</Badge>
+                <Badge variant="outline" className="font-mono">/ng-affiliate</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Standard Percentage Commission • 30 Days Cookie • ₦5,000 Min Payout
+              </p>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>Default</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {settings.commissionRules.map((rule) => (
-                  <TableRow key={rule.id}>
-                    <TableCell className="font-medium">{rule.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{rule.type}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {rule.type === 'PERCENTAGE' ? `${rule.value}%` : `${currencySymbol}${rule.value}`}
-                    </TableCell>
-                    <TableCell>
-                      {rule.isDefault && <Badge variant="default">Default</Badge>}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={rule.isActive ? 'default' : 'secondary'}>
-                        {rule.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEditRule(rule)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteRule(rule.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+            <div className="text-right">
+              <span className="text-2xl font-bold text-primary">10%</span>
+              <p className="text-xs text-muted-foreground">Commission Rate</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

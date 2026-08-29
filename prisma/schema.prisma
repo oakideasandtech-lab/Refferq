@@ -39,6 +39,8 @@ model Affiliate {
   updatedAt      DateTime      @updatedAt @map("updated_at")
   partnerGroupId String?       @map("partner_group_id")
   partnerGroup   PartnerGroup? @relation(fields: [partnerGroupId], references: [id])
+  programId      String?       @map("program_id")
+  program        Program?      @relation(fields: [programId], references: [id])
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   commissions    Commission[]
   conversions    Conversion[]
@@ -652,6 +654,7 @@ model Program {
   termsUrl          String?  @map("terms_url")
   logoUrl           String?  @map("logo_url")
   brandColor        String   @default("#10b981") @map("brand_color")
+  affiliates        Affiliate[]
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
