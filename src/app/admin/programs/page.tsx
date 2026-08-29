@@ -45,7 +45,7 @@ interface Program {
 
 const emptyForm = {
   name: '', slug: '', description: '', commissionRate: '20', commissionType: 'PERCENTAGE',
-  cookieDuration: '30', currency: 'NGN', autoApprove: false, minPayoutCents: '100000',
+  cookieDuration: '30', currency: 'NGN', autoApprove: false, minPayoutCents: '1000',
   payoutFrequency: 'MONTHLY', termsUrl: '', logoUrl: '', brandColor: '#6366f1',
 };
 
@@ -83,7 +83,9 @@ export default function ProgramsPage() {
       name: p.name, slug: p.slug, description: p.description || '',
       commissionRate: String(p.commissionRate), commissionType: p.commissionType,
       cookieDuration: String(p.cookieDuration), currency: p.currency,
-      autoApprove: p.autoApprove, minPayoutCents: String(p.minPayoutCents),
+      autoApprove: p.autoApprove,
+      // DB stores kobo/cents — show the user clean Naira (divide by 100)
+      minPayoutCents: String(Math.round(p.minPayoutCents / 100)),
       payoutFrequency: p.payoutFrequency, termsUrl: p.termsUrl || '',
       logoUrl: p.logoUrl || '', brandColor: p.brandColor || '#6366f1',
     });
@@ -97,7 +99,9 @@ export default function ProgramsPage() {
         name: form.name, slug: form.slug, description: form.description || null,
         commissionRate: parseFloat(form.commissionRate), commissionType: form.commissionType,
         cookieDuration: parseInt(form.cookieDuration), currency: form.currency,
-        autoApprove: form.autoApprove, minPayoutCents: parseInt(form.minPayoutCents),
+        autoApprove: form.autoApprove,
+        // User enters Naira — convert to kobo/cents for DB storage
+        minPayoutCents: Math.round(parseFloat(form.minPayoutCents) * 100),
         payoutFrequency: form.payoutFrequency,
         termsUrl: form.termsUrl || null, logoUrl: form.logoUrl || null,
         brandColor: form.brandColor || null,
@@ -349,8 +353,8 @@ export default function ProgramsPage() {
                 <Input value="NGN (₦)" readOnly />
               </div>
               <div className="grid gap-2">
-                <Label>Min Payout (cents)</Label>
-                <Input type="number" value={form.minPayoutCents} onChange={e => setForm({...form, minPayoutCents: e.target.value})} />
+                <Label>Min Payout (₦)</Label>
+                <Input type="number" min="0" value={form.minPayoutCents} onChange={e => setForm({...form, minPayoutCents: e.target.value})} placeholder="e.g. 5000" />
               </div>
               <div className="grid gap-2">
                 <Label>Payout Frequency</Label>

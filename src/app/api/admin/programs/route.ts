@@ -80,17 +80,33 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id } = body;
+    const { id, isDefault, isActive, ...rest } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Program ID required' }, { status: 400 });
     }
 
-    // Only allow specific fields (prevent mass assignment)
-    const allowedFields = ['name', 'description', 'commissionType', 'commissionValue', 'cookieDuration', 'isActive', 'terms'];
+    // If setting as default: unset all other programs first
+    if (isDefault === true) {
+      await prisma.program.updateMany({
+        where: { isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+
+    // Build the updates object from allowed editable fields
     const updates: Record<string, any> = {};
-    for (const key of allowedFields) {
-      if (key in body && body[key] !== undefined) updates[key] = body[key];
+
+    if (isDefault !== undefined) updates.isDefault = isDefault;
+    if (isActive !== undefined) updates.isActive = isActive;
+
+    const editableFields = [
+      'name', 'slug', 'description', 'commissionRate', 'commissionType',
+      'cookieDuration', 'currency', 'autoApprove', 'minPayoutCents',
+      'payoutFrequency', 'termsUrl', 'logoUrl', 'brandColor',
+    ];
+    for (const key of editableFields) {
+      if (key in rest && rest[key] !== undefined) updates[key] = rest[key];
     }
 
     const program = await prisma.program.update({
