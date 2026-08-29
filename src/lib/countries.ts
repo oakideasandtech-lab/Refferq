@@ -106,8 +106,18 @@ export function validateCountryPhone(phoneInput: string, countryConfig: CountryC
   }
 
   const raw = phoneInput.trim();
+
+  // Check for letters or illegal symbols
+  if (/[a-zA-Z]/.test(raw)) {
+    return { valid: false, error: 'Phone number cannot contain letters.' };
+  }
+
   const digitsOnly = raw.replace(/\D/g, '');
   const prefixDigits = countryConfig.phonePrefix.replace(/\D/g, '');
+
+  if (digitsOnly.length === 0) {
+    return { valid: false, error: 'Phone number must contain digits.' };
+  }
 
   // Case 1: Phone starts with international prefix (e.g. +234 8012345678 or 2348012345678)
   if (digitsOnly.startsWith(prefixDigits)) {
@@ -135,6 +145,6 @@ export function validateCountryPhone(phoneInput: string, countryConfig: CountryC
 
   return {
     valid: false,
-    error: `Invalid phone format for ${countryConfig.name}. Requires ${countryConfig.sampleFormat}.`,
+    error: `Invalid phone format for ${countryConfig.name}. Requires ${countryConfig.sampleFormat}. You entered ${digitsOnly.length} digits.`,
   };
 }

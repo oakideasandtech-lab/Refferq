@@ -172,7 +172,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           email: formData.email.trim(),
           name: formData.name.trim(),
-          phone: formData.phone.trim(),
+          phone: phoneValidation.formatted || formData.phone.trim(),
           website: formData.website.trim(),
           promotionMethod: formData.promotionMethod,
           programId: selectedProgramId || undefined,
@@ -438,14 +438,29 @@ export default function RegisterPage() {
                           type="tel"
                           placeholder={countryConfig.placeholder}
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="pl-9"
+                          maxLength={countryConfig.phonePrefix.length + countryConfig.localDigitCount + 4}
+                          onChange={(e) => {
+                            // Strip any letters or invalid symbols in real-time as the user types
+                            const cleanVal = e.target.value.replace(/[^0-9+\s\-()]/g, '');
+                            setFormData({ ...formData, phone: cleanVal });
+                          }}
+                          className="pl-9 font-mono text-sm"
                           required
                         />
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-1 font-medium">
-                        Standard format: <span className="font-semibold text-foreground">{countryConfig.sampleFormat}</span>
-                      </p>
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-1">
+                        <span>Standard format: <strong className="text-foreground">{countryConfig.sampleFormat}</strong></span>
+                        {formData.phone.replace(/\D/g, '').length > 0 && (
+                          <span className={`font-mono text-[10px] px-2 py-0.5 rounded-md font-bold ${
+                            formData.phone.replace(/\D/g, '').length === (formData.phone.trim().startsWith('+') ? (countryConfig.phonePrefix.replace(/\D/g, '').length + countryConfig.nationalDigits) : countryConfig.localDigitCount) ||
+                            formData.phone.replace(/\D/g, '').length === countryConfig.nationalDigits
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          }`}>
+                            {formData.phone.replace(/\D/g, '').length} digits
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Website / Social Channel / Company */}
