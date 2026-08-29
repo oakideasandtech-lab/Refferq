@@ -80,6 +80,9 @@ interface Partner {
   revenue: number;
   earnings: number;
   groupName?: string;
+  currency?: string;
+  currencySymbol?: string;
+  countryName?: string;
 }
 
 export default function PartnersPage() {
@@ -533,10 +536,10 @@ export default function PartnersPage() {
                       <TableCell>{partner.leads}</TableCell>
                       <TableCell>{partner.customers}</TableCell>
                       <TableCell className="text-right font-medium">
-                        {currencySymbol}{(partner.revenue / 100).toFixed(2)}
+                        {partner.currencySymbol || currencySymbol}{(partner.revenue / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {currencySymbol}{(partner.earnings / 100).toFixed(2)}
+                      <TableCell className="text-right font-medium text-emerald-600">
+                        {partner.currencySymbol || currencySymbol}{(partner.earnings / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(partner.createdAt).toLocaleDateString('en-US', {

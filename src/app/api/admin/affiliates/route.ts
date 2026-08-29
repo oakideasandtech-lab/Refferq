@@ -19,9 +19,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all affiliates with their user info and counts
+    // Fetch all affiliates with their user info, program, and counts
     const affiliates = await prisma.affiliate.findMany({
       include: {
+        program: {
+          select: {
+            id: true,
+            name: true,
+            currency: true,
+            countryCode: true,
+            countryName: true,
+          },
+        },
         user: {
           select: {
             id: true,
@@ -29,28 +38,40 @@ export async function GET(request: NextRequest) {
             email: true,
             role: true,
             status: true,
-            createdAt: true
-          }
+            createdAt: true,
+          },
         },
         _count: {
           select: {
-            referrals: true
-          }
-        }
+            referrals: true,
+            conversions: true,
+            commissions: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     });
 
-    // Get currency symbol
-    const { getCurrencySymbol } = await import('@/lib/currency');
-    const currencySymbol = await getCurrencySymbol();
+    const { getCurrencySymbolForCode, getCurrencySymbol } = await import('@/lib/currency');
+    const defaultSymbol = await getCurrencySymbol();
+
+    const formattedAffiliates = affiliates.map((a) => {
+      const currency = a.program?.currency || 'NGN';
+      const currencySymbol = getCurrencySymbolForCode(currency);
+      return {
+        ...a,
+        currency,
+        currencySymbol,
+        countryName: a.program?.countryName || (currency === 'NGN' ? 'Nigeria' : currency === 'KES' ? 'Kenya' : 'Global'),
+      };
+    });
 
     return NextResponse.json({
       success: true,
-      affiliates,
-      currencySymbol, // Add currency symbol to response
+      affiliates: formattedAffiliates,
+      currencySymbol: defaultSymbol,
     });
   } catch (error) {
     console.error('Get affiliates API error:', error);
