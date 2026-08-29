@@ -279,8 +279,8 @@ export default function RegisterPage() {
                 <Zap className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h4 className="font-semibold text-sm">Monthly Auto Payouts in NGN (₦)</h4>
-                <p className="text-xs text-muted-foreground">Direct bank payouts straight to your Nigerian bank account.</p>
+                <h4 className="font-semibold text-sm">Monthly Auto Payouts in Your Currency</h4>
+                <p className="text-xs text-muted-foreground">Direct automated payouts straight to your local bank account or mobile wallet.</p>
               </div>
             </div>
           </div>
