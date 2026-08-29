@@ -122,12 +122,16 @@ export default function ApiKeysPage() {
         body: JSON.stringify(payload),
       });
       const json = await res.json();
-      if (json.success) {
-        setNewKeySecret(json.apiKey.key || json.apiKey.fullKey);
+      if (json.success && json.apiKey) {
+        const generatedKey = json.apiKey.key || json.apiKey.fullKey;
+        setNewKeySecret(generatedKey);
         await fetchKeys();
+      } else {
+        alert(json.error || 'Failed to create API key');
       }
     } catch (error) {
       console.error('Failed to create API key:', error);
+      alert('Network or server error creating API key');
     } finally {
       setCreating(false);
     }
