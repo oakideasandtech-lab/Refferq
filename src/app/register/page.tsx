@@ -46,6 +46,8 @@ import {
 } from 'lucide-react';
 import { useRecaptcha } from '@/hooks/useRecaptcha';
 
+import { getCountryByCurrency, validateCountryPhone, WORLD_COUNTRIES } from '@/lib/countries';
+
 type Step = 'details' | 'otp' | 'success';
 
 interface ProgramItem {
@@ -58,16 +60,6 @@ interface ProgramItem {
   commissionRate: number;
   isDefault: boolean;
 }
-
-const COUNTRY_PHONE_CONFIG: Record<string, { prefix: string; placeholder: string; minDigits: number; maxDigits: number; sample: string }> = {
-  NGN: { prefix: '+234', placeholder: '+234 801 234 5678 or 08012345678', minDigits: 10, maxDigits: 13, sample: '10 to 11 digits (e.g. +234 801 234 5678 or 08012345678)' },
-  KES: { prefix: '+254', placeholder: '+254 712 345 678 or 0712345678', minDigits: 9, maxDigits: 12, sample: '9 to 10 digits (e.g. +254 712 345 678 or 0712345678)' },
-  GHS: { prefix: '+233', placeholder: '+233 24 123 4567 or 0241234567', minDigits: 9, maxDigits: 12, sample: '9 digits (e.g. +233 24 123 4567 or 0241234567)' },
-  ZAR: { prefix: '+27', placeholder: '+27 82 123 4567 or 0821234567', minDigits: 9, maxDigits: 11, sample: '9 to 10 digits (e.g. +27 82 123 4567)' },
-  USD: { prefix: '+1', placeholder: '+1 555 123 4567', minDigits: 10, maxDigits: 15, sample: '10 to 15 digits (e.g. +1 555 123 4567)' },
-  EUR: { prefix: '+33', placeholder: '+33 6 12 34 56 78', minDigits: 9, maxDigits: 15, sample: '9 to 15 digits' },
-  GBP: { prefix: '+44', placeholder: '+44 7911 123456', minDigits: 10, maxDigits: 13, sample: '10 to 11 digits (e.g. +44 7911 123456)' },
-};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -99,8 +91,8 @@ export default function RegisterPage() {
           const defaultProg = data.programs.find((p: ProgramItem) => p.isDefault) || data.programs[0];
           if (defaultProg) {
             setSelectedProgramId(defaultProg.id);
-            const defaultRule = COUNTRY_PHONE_CONFIG[defaultProg.currency] || COUNTRY_PHONE_CONFIG.NGN;
-            setFormData(prev => ({ ...prev, phone: `${defaultRule.prefix} ` }));
+            const countryConfig = getCountryByCurrency(defaultProg.currency);
+            setFormData(prev => ({ ...prev, phone: `${countryConfig.phonePrefix} ` }));
           }
         }
       } catch (err) {
@@ -111,28 +103,25 @@ export default function RegisterPage() {
   }, []);
 
   const selectedProg = activePrograms.find(p => p.id === selectedProgramId);
-  const currentCurrency = selectedProg?.currency || 'NGN';
-  const phoneRule = COUNTRY_PHONE_CONFIG[currentCurrency] || COUNTRY_PHONE_CONFIG.NGN;
+  const countryConfig = getCountryByCurrency(selectedProg?.currency || 'NGN');
 
   const handleCountryChange = (newProgramId: string) => {
     setSelectedProgramId(newProgramId);
     const newProg = activePrograms.find(p => p.id === newProgramId);
-    const newCurr = newProg?.currency || 'NGN';
-    const newRule = COUNTRY_PHONE_CONFIG[newCurr] || COUNTRY_PHONE_CONFIG.NGN;
+    const newConfig = getCountryByCurrency(newProg?.currency || 'NGN');
 
     setFormData(prev => {
       let currentPhone = prev.phone.trim();
-      // Extract local subscriber digits by stripping existing country prefixes
       let localDigits = currentPhone;
-      Object.values(COUNTRY_PHONE_CONFIG).forEach(c => {
-        if (localDigits.startsWith(c.prefix)) {
-          localDigits = localDigits.slice(c.prefix.length).trim();
+      Object.values(WORLD_COUNTRIES).forEach(c => {
+        if (localDigits.startsWith(c.phonePrefix)) {
+          localDigits = localDigits.slice(c.phonePrefix.length).trim();
         }
       });
 
       return {
         ...prev,
-        phone: localDigits ? `${newRule.prefix} ${localDigits}` : `${newRule.prefix} `,
+        phone: localDigits ? `${newConfig.phonePrefix} ${localDigits}` : `${newConfig.phonePrefix} `,
       };
     });
   };
@@ -152,12 +141,11 @@ export default function RegisterPage() {
     }
 
     const currentProg = activePrograms.find(p => p.id === selectedProgramId);
-    const currencyKey = currentProg?.currency || 'NGN';
-    const phoneRule = COUNTRY_PHONE_CONFIG[currencyKey] || COUNTRY_PHONE_CONFIG.NGN;
-    const phoneDigits = formData.phone.replace(/\D/g, '');
+    const activeCountry = getCountryByCurrency(currentProg?.currency || 'NGN');
+    const phoneValidation = validateCountryPhone(formData.phone, activeCountry);
 
-    if (phoneDigits.length < phoneRule.minDigits || phoneDigits.length > phoneRule.maxDigits) {
-      setError(`Invalid phone number format for ${currentProg?.name || currencyKey}. Phone number must be ${phoneRule.sample}.`);
+    if (!phoneValidation.valid) {
+      setError(phoneValidation.error || 'Invalid phone number format.');
       return;
     }
 
@@ -428,19 +416,10 @@ export default function RegisterPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {activePrograms.map((prog) => {
-                              const currencyCountryMap: Record<string, { flag: string; country: string }> = {
-                                NGN: { flag: '🇳🇬', country: 'Nigeria' },
-                                KES: { flag: '🇰🇪', country: 'Kenya' },
-                                GHS: { flag: '🇬🇭', country: 'Ghana' },
-                                ZAR: { flag: '🇿🇦', country: 'South Africa' },
-                                USD: { flag: '🇺🇸', country: 'Global / International' },
-                                EUR: { flag: '🇪🇺', country: 'Europe' },
-                                GBP: { flag: '🇬🇧', country: 'United Kingdom' },
-                              };
-                              const meta = currencyCountryMap[prog.currency] || { flag: '🌍', country: prog.name };
+                              const meta = getCountryByCurrency(prog.currency);
                               return (
                                 <SelectItem key={prog.id} value={prog.id}>
-                                  {meta.flag} {meta.country} — {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
+                                  {meta.flag} {meta.name} — {prog.name} ({prog.currency} • {prog.commissionRate}% Commission)
                                 </SelectItem>
                               );
                             })}
@@ -457,7 +436,7 @@ export default function RegisterPage() {
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder={phoneRule.placeholder}
+                          placeholder={countryConfig.placeholder}
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                           className="pl-9"
@@ -465,7 +444,7 @@ export default function RegisterPage() {
                         />
                       </div>
                       <p className="text-[11px] text-muted-foreground mt-1 font-medium">
-                        Standard format: <span className="font-semibold text-foreground">{phoneRule.sample}</span>
+                        Standard format: <span className="font-semibold text-foreground">{countryConfig.sampleFormat}</span>
                       </p>
                     </div>
 
