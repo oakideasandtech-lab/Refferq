@@ -17,9 +17,52 @@ const geistMono = Geist_Mono({
   display: 'swap',
 });
 
-export const metadata = {
-  title: 'PulseISP Affiliate - Affiliate Marketing Platform',
-  description: 'Affiliate marketing platform for PulseISP with comprehensive tracking, commission management, and payout automation.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'PulseISP Partner & Affiliate Program | Earn Recurring Revenue',
+    template: '%s | PulseISP Partner Program',
+  },
+  description:
+    'Join the official PulseISP Partner Network. Recommend the leading Cloud MikroTik ISP Billing & Hotspot Management platform and earn up to 20% recurring monthly commissions.',
+  keywords: [
+    'PulseISP affiliate',
+    'ISP billing partner program',
+    'MikroTik partner program Nigeria',
+    'MikroTik partner program Kenya',
+    'telecom affiliate Africa',
+    'WISP billing software commission',
+    'hotspot billing partner',
+  ],
+  metadataBase: new URL('https://affiliate.pulseisp.com'),
+  alternates: {
+    canonical: 'https://affiliate.pulseisp.com',
+  },
+  openGraph: {
+    title: 'PulseISP Partner & Affiliate Program | Earn Recurring Revenue',
+    description:
+      'Earn recurring monthly commissions recommending PulseISP Cloud MikroTik ISP Billing & Hotspot Management Platform.',
+    url: 'https://affiliate.pulseisp.com',
+    siteName: 'PulseISP Partner Network',
+    images: [
+      {
+        url: 'https://www.pulseisp.com/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'PulseISP Partner Program',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PulseISP Partner & Affiliate Program',
+    description:
+      'Earn recurring monthly commissions recommending PulseISP Cloud MikroTik ISP Billing & Hotspot Management Platform.',
+    images: ['https://www.pulseisp.com/og-image.jpg'],
+  },
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',

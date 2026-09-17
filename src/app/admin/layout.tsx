@@ -235,6 +235,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, loading } = useAuth();
   const [brand, setBrand] = useState<BrandSettings>({});
 
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/admin': 'Executive Dashboard | PulseISP Admin',
+      '/admin/partners': 'Affiliate Partners | PulseISP Admin',
+      '/admin/customers': 'Referred ISP Customers | PulseISP Admin',
+      '/admin/payouts': 'Commission Payouts | PulseISP Admin',
+      '/admin/invoices': 'Invoices & Billing | PulseISP Admin',
+      '/admin/emails': 'Email Logs & Notifications | PulseISP Admin',
+      '/admin/coupons': 'Promo & Coupon Codes | PulseISP Admin',
+      '/admin/resources': 'Marketing Resources | PulseISP Admin',
+      '/admin/programs': 'Affiliate Programs & Commission Tiers | PulseISP Admin',
+      '/admin/program-settings': 'Program Settings & Branding | PulseISP Admin',
+      '/admin/reports': 'Performance & Financial Reports | PulseISP Admin',
+      '/admin/team': 'Team Members & Permissions | PulseISP Admin',
+      '/admin/api-keys': 'API Keys & Webhooks | PulseISP Admin',
+      '/admin/api-analytics': 'API Usage Analytics | PulseISP Admin',
+      '/admin/settings': 'Platform Settings | PulseISP Admin',
+    };
+
+    if (pathname.startsWith('/admin/partners/')) {
+      document.title = 'Partner Profile & Conversions | PulseISP Admin';
+    } else if (pathname.startsWith('/admin/customers/')) {
+      document.title = 'Customer Details | PulseISP Admin';
+    } else {
+      document.title = titles[pathname] || 'PulseISP Admin Portal';
+    }
+  }, [pathname]);
+
   useEffect(() => {
     fetch('/api/affiliate/branding')
       .then(res => res.json())

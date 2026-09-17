@@ -194,6 +194,20 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
   const { user, loading } = useAuth();
   const [brand, setBrand] = useState<BrandSettings>({});
 
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/affiliate': 'Partner Dashboard | PulseISP Partner Portal',
+      '/affiliate/referrals': 'Referred Leads & Conversions | PulseISP Partner Portal',
+      '/affiliate/payouts': 'Earnings & Payouts | PulseISP Partner Portal',
+      '/affiliate/resources': 'Marketing Assets & Links | PulseISP Partner Portal',
+      '/affiliate/reports': 'Performance Analytics | PulseISP Partner Portal',
+      '/affiliate/settings': 'Payout & Profile Settings | PulseISP Partner Portal',
+    };
+    document.title = titles[pathname] || 'PulseISP Partner Portal';
+  }, [pathname]);
+
   useEffect(() => {
     fetch('/api/affiliate/branding')
       .then(res => res.json())
