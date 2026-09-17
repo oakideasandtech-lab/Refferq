@@ -65,6 +65,7 @@ interface Referral {
     partnerGroup: string;
     partnerGroupId: string | null;
     commissionRate: number;
+    currency?: string;
   };
 }
 
@@ -399,7 +400,7 @@ export default function CustomerDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Estimated Value</span>
                 <span className="flex items-center gap-1 font-semibold">
-                  <Banknote className="h-3.5 w-3.5" />
+                  <span>{referral.affiliate.currency === 'KES' ? 'KSh ' : referral.affiliate.currency === 'USD' ? '$' : '₦'}</span>
                   {referral.estimatedValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </span>
               </div>
@@ -411,7 +412,7 @@ export default function CustomerDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Est. Commission</span>
                 <span className="flex items-center gap-1 text-lg font-bold text-primary">
-                  <Banknote className="h-4 w-4" />
+                  <span>{referral.affiliate.currency === 'KES' ? 'KSh ' : referral.affiliate.currency === 'USD' ? '$' : '₦'}</span>
                   {estimatedCommission.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </span>
               </div>

@@ -35,7 +35,7 @@ export async function PUT(
       where: { id: params.id },
       include: {
         affiliate: {
-          include: { partnerGroup: true }
+          include: { partnerGroup: true, program: true }
         }
       }
     });
@@ -63,10 +63,12 @@ export async function PUT(
 
     // If approved, create conversion and commission
     if (action === 'approve') {
-      // Get commission rate from partner group or use default 10%
-      const commissionRate = referral.affiliate.partnerGroup?.commissionRate
+      // Get commission rate from program, partner group, or default 10%
+      const commissionRate = referral.affiliate.program?.commissionRate
+        ? referral.affiliate.program.commissionRate / 100
+        : referral.affiliate.partnerGroup?.commissionRate
         ? referral.affiliate.partnerGroup.commissionRate / 100
-        : 0.1;
+        : 0.10;
 
       const conversion = await prisma.conversion.create({
         data: {

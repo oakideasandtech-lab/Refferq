@@ -25,18 +25,31 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all referrals with affiliate information
+    const searchParams = request.nextUrl.searchParams;
+    const includeClicks = searchParams.get('includeClicks') === 'true';
+
+    // Get all real referrals with affiliate & program information
     const referrals = await prisma.referral.findMany({
+      where: includeClicks
+        ? undefined
+        : {
+            leadEmail: {
+              not: {
+                contains: '@tracking.internal',
+              },
+            },
+          },
       include: {
         affiliate: {
           include: {
-            user: true
-          }
-        }
+            user: true,
+            program: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     });
     
     // Get all partner groups for commission rate lookup
@@ -53,6 +66,13 @@ export async function GET(request: NextRequest) {
         const pgId = affiliate.partnerGroupId;
         const pgData = pgId ? partnerGroupMap.get(pgId) : null;
         
+        // Use active program rate, or partner group rate, or 10% default
+        const commRate = affiliate.program?.commissionRate
+          ? affiliate.program.commissionRate / 100
+          : pgData?.rate
+          ? (pgData.rate > 1 ? pgData.rate / 100 : pgData.rate)
+          : 0.10;
+
         return {
           id: referral.id,
           leadEmail: referral.leadEmail,
@@ -68,9 +88,10 @@ export async function GET(request: NextRequest) {
             name: affiliate.user.name,
             email: affiliate.user.email,
             referralCode: affiliate.referralCode,
-            partnerGroup: pgData?.name || 'Default',
+            partnerGroup: pgData?.name || affiliate.program?.name || 'Default',
             partnerGroupId: pgId,
-            commissionRate: pgData?.rate || 0.20
+            commissionRate: commRate,
+            currency: affiliate.program?.currency || 'NGN',
           }
         };
       })

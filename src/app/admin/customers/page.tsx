@@ -61,6 +61,7 @@ interface Referral {
     referralCode: string;
     partnerGroup: string;
     commissionRate: number;
+    currency?: string;
   };
 }
 
@@ -287,7 +288,7 @@ export default function CustomersPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm font-medium">
-                        <Banknote className="h-3.5 w-3.5" />
+                        <span>{referral.affiliate.currency === 'KES' ? 'KSh ' : referral.affiliate.currency === 'USD' ? '$' : '₦'}</span>
                         {referral.estimatedValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                       </div>
                     </TableCell>
