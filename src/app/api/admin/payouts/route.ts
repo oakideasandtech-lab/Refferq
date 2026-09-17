@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAuditAction } from '@/lib/audit';
+import { notifyPendingPayout } from '@/lib/slack';
 
 
 interface JWTPayload {
@@ -244,22 +245,38 @@ export async function POST(request: NextRequest) {
       const affiliateUser = await prisma.user.findFirst({
         where: {
           affiliate: { id: affiliateId }
-        }
+        },
+        include: {
+          affiliate: true,
+        },
       });
 
       if (affiliateUser?.email) {
         const { emailService } = await import('@/lib/email');
         await emailService.sendPayoutCreatedEmail(affiliateUser.email, {
-          affiliateName: payout.affiliate.name || affiliateUser.name || 'Partner',
+          affiliateName: payout.affiliate?.name || affiliateUser.name || 'Partner',
           amountCents: totalAmountCents,
           commissionCount: commissions.length,
           payoutId: payout.id,
           method: method || 'Bank Transfer'
         });
+
+        // Send Slack notification to #pending-payout
+        const details = (affiliateUser.affiliate?.payoutDetails as any) || {};
+        await notifyPendingPayout({
+          partnerName: affiliateUser.name || payout.affiliate?.name || 'Partner',
+          email: affiliateUser.email,
+          amountCents: totalAmountCents,
+          bankName: affiliateUser.affiliate?.bankName || details.bankName,
+          accountName: affiliateUser.affiliate?.accountName || details.accountName,
+          accountNumber: affiliateUser.affiliate?.accountNumber || details.accountNumber,
+          commissionCount: commissions.length,
+          payoutId: payout.id,
+        });
       }
     } catch (emailError) {
-      console.error('Failed to send payout created email:', emailError);
-      // Don't fail the payout if email fails
+      console.error('Failed to send payout created notification:', emailError);
+      // Don't fail the payout if notification fails
     }
 
     return NextResponse.json({

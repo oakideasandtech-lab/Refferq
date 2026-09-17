@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { emailService } from '@/lib/email';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { notifyPendingPartnerApproval } from '@/lib/slack';
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,6 +78,28 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       // Log email error but don't fail the registration
       console.error('⚠️ Failed to send welcome email:', emailError);
+    }
+
+    // Send Slack notification to #pending-approval (non-blocking)
+    try {
+      if (result.user?.role === 'AFFILIATE') {
+        const aff = (result as any).affiliate;
+        const progName = aff?.program?.name || 'PulseISP Partner Program';
+        const country = aff?.payoutDetails?.country || (aff?.program?.currency === 'KES' ? 'Kenya' : 'Nigeria');
+
+        await notifyPendingPartnerApproval({
+          name: result.user.name,
+          email: result.user.email,
+          phone: phone ? phone.trim() : undefined,
+          website: website ? website.trim() : undefined,
+          promotionMethod: promotionMethod || undefined,
+          programName: `${country === 'Kenya' ? '🇰🇪' : '🇳🇬'} ${progName}`,
+          referralCode: aff?.referralCode,
+          affiliateId: aff?.id,
+        });
+      }
+    } catch (slackError) {
+      console.error('⚠️ Failed to send Slack pending approval alert:', slackError);
     }
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { notifyFlaggedOrLargeCommission } from '@/lib/slack';
 
 // ─── Webhook Signature Verification ────────────────────────────
 function verifyWebhookSignature(payload: string, signature: string | null, secret: string): boolean {
@@ -179,6 +180,42 @@ export async function POST(request: NextRequest) {
         attributionMethod,
       },
     });
+
+    // Check for Flagged / Large Commission Slack Alert (non-blocking)
+    try {
+      const partnerUser = await prisma.user.findUnique({
+        where: { id: affiliate.userId },
+        select: { name: true, email: true },
+      });
+
+      const partnerEmail = partnerUser?.email?.toLowerCase() || '';
+      const buyerEmail = (customer_email || '').toLowerCase().trim();
+
+      // Flag 1: Self-referral detection
+      const isSelfReferral = !!partnerEmail && partnerEmail === buyerEmail;
+
+      // Flag 2: Large Commission Threshold (>= ₦20,000 / $20 or order value >= ₦100,000 / $100)
+      const isLargeCommission = (currency === 'USD' ? commissionAmount >= 2000 : commissionAmount >= 2000000)
+        || (currency === 'USD' ? (amount_cents || 0) >= 10000 : (amount_cents || 0) >= 10000000);
+
+      if (isSelfReferral || isLargeCommission) {
+        await notifyFlaggedOrLargeCommission({
+          partnerName: partnerUser?.name || 'Partner',
+          email: partnerUser?.email || '',
+          customerEmail: customer_email,
+          orderValueCents: amount_cents || 0,
+          commissionCents: commissionAmount,
+          currency,
+          isFlagged: isSelfReferral,
+          reason: isSelfReferral
+            ? '🚨 Potential Self-Referral: Converted customer email matches affiliate account email.'
+            : '💎 High-value customer transaction / tier upgrade.',
+          conversionId: conversion.id,
+        });
+      }
+    } catch (slackErr) {
+      console.error('Failed to dispatch Slack flagged/large commission alert:', slackErr);
+    }
 
     return NextResponse.json({
       success: true,

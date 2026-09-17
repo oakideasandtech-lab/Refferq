@@ -79,6 +79,10 @@ interface Partner {
   totalLeads: number;
   totalRevenue: number;
   createdAt: string;
+  currency?: string;
+  currencySymbol?: string;
+  countryName?: string;
+  programName?: string;
 }
 
 interface Customer {
@@ -150,18 +154,32 @@ export default function PartnerDetailPage() {
         const data = await res.json();
         const affiliate = data.affiliates?.find((a: any) => a.id === partnerId);
         if (affiliate) {
+          const cur = affiliate.currency || affiliate.program?.currency || 'NGN';
+          const sym = affiliate.currencySymbol || (cur === 'KES' ? 'KSh ' : '₦');
+          const country = affiliate.countryName || affiliate.program?.countryName || (cur === 'KES' ? 'Kenya' : 'Nigeria');
+
           setPartner({
             id: affiliate.id,
             name: affiliate.name,
             email: affiliate.email,
             referralCode: affiliate.referralCode,
-            partnerGroup: affiliate.partnerGroup,
-            commissionRate: affiliate.commissionRate || 0.20,
+            partnerGroup: affiliate.partnerGroup?.name || affiliate.partnerGroup,
+            commissionRate: (affiliate.program?.commissionRate ? affiliate.program.commissionRate / 100 : affiliate.commissionRate) || 0.10,
             status: affiliate.status,
+            phone: affiliate.bankName || affiliate.phone || affiliate.payoutDetails?.phone,
+            website: affiliate.website || affiliate.payoutDetails?.website,
+            promotionMethod: affiliate.promotionMethod || affiliate.payoutDetails?.promotionMethod,
+            bankName: affiliate.bankName || affiliate.payoutDetails?.bankName,
+            accountName: affiliate.accountName || affiliate.payoutDetails?.accountName,
+            accountNumber: affiliate.accountNumber || affiliate.payoutDetails?.accountNumber,
             totalClicks: affiliate.totalClicks || 0,
-            totalLeads: affiliate.totalLeads || 0,
+            totalLeads: affiliate.totalLeads || affiliate._count?.referrals || 0,
             totalRevenue: affiliate.totalRevenue || 0,
             createdAt: affiliate.createdAt,
+            currency: cur,
+            currencySymbol: sym,
+            countryName: country,
+            programName: affiliate.program?.name || 'PulseISP Partner Program',
           });
         }
       }
@@ -296,8 +314,10 @@ export default function PartnerDetailPage() {
     );
   };
 
-  const formatCurrency = (cents: number) =>
-    `${currencySymbol}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatCurrency = (cents: number) => {
+    const sym = partner?.currencySymbol || currencySymbol || '₦';
+    return `${sym}${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -319,24 +339,29 @@ export default function PartnerDetailPage() {
       REFUNDED: { variant: 'destructive', icon: Ban },
       REJECTED: { variant: 'destructive', icon: Ban },
     };
-    const { variant, icon: Icon } = map[status] || { variant: 'outline' as const, icon: Clock };
+    const config = map[status] || { variant: 'outline', icon: AlertCircle };
+    const Icon = config.icon;
     return (
-      <Badge variant={variant} className="gap-1 text-xs">
+      <Badge variant={config.variant} className="gap-1 capitalize">
         <Icon className="h-3 w-3" />
-        {status}
+        {status.toLowerCase()}
       </Badge>
     );
   };
 
-  if (authLoading || loading) {
-    return <DetailSkeleton />;
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (!partner) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-          <Users className="h-7 w-7 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <AlertCircle className="h-6 w-6 text-muted-foreground" />
         </div>
         <h2 className="mt-4 text-xl font-bold">Partner not found</h2>
         <p className="mt-1 text-sm text-muted-foreground">This partner may have been removed</p>
@@ -371,6 +396,16 @@ export default function PartnerDetailPage() {
                   <Copy className="h-3 w-3" />
                   {partner.referralCode}
                 </Badge>
+                {partner.countryName && (
+                  <Badge variant="secondary" className="text-xs font-semibold">
+                    {partner.countryName.toLowerCase() === 'kenya' ? '🇰🇪 Kenya' : partner.countryName.toLowerCase() === 'nigeria' ? '🇳🇬 Nigeria' : `🌐 ${partner.countryName}`}
+                  </Badge>
+                )}
+                {partner.programName && (
+                  <Badge variant="outline" className="text-xs text-primary border-primary/30">
+                    📦 {partner.programName}
+                  </Badge>
+                )}
                 {partner.partnerGroup && (
                   <Badge variant="secondary" className="text-xs">
                     {partner.partnerGroup}

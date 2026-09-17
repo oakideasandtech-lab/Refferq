@@ -39,7 +39,7 @@ class AuthService {
    * Register a new user and create their profile.
    * This is a server-side only method.
    */
-  async register(data: RegisterData): Promise<{ success: boolean; message: string; user?: User }> {
+  async register(data: RegisterData): Promise<{ success: boolean; message: string; user?: User; affiliate?: any }> {
     try {
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
@@ -68,29 +68,76 @@ class AuthService {
         }
       });
 
+      let affiliate = null;
       // If affiliate, create affiliate record
       if (userRoleLower === 'affiliate') {
         const referralCode = this.generateReferralCode(data.name);
 
-        await prisma.affiliate.create({
+        let resolvedProgram = null;
+        if (data.programId) {
+          resolvedProgram = await prisma.program.findUnique({ where: { id: data.programId } }).catch(() => null);
+        }
+
+        // If not found or not provided, auto-match from phone prefix
+        if (!resolvedProgram && data.phone) {
+          const cleanPhone = data.phone.trim();
+          if (cleanPhone.startsWith('+254') || cleanPhone.startsWith('254')) {
+            resolvedProgram = await prisma.program.findFirst({
+              where: {
+                OR: [
+                  { countryCode: 'KE' },
+                  { currency: 'KES' },
+                  { name: { contains: 'Kenya', mode: 'insensitive' } },
+                  { name: { contains: 'Keyan', mode: 'insensitive' } },
+                ],
+              },
+            });
+          } else if (cleanPhone.startsWith('+234') || cleanPhone.startsWith('234')) {
+            resolvedProgram = await prisma.program.findFirst({
+              where: {
+                OR: [
+                  { countryCode: 'NG' },
+                  { currency: 'NGN' },
+                  { name: { contains: 'Nigeria', mode: 'insensitive' } },
+                ],
+              },
+            });
+          }
+        }
+
+        // Fallback to default or active program
+        if (!resolvedProgram) {
+          resolvedProgram = (await prisma.program.findFirst({ where: { isDefault: true, isActive: true } }))
+            || (await prisma.program.findFirst({ where: { isActive: true } }));
+        }
+
+        const countryName = resolvedProgram?.countryName || (resolvedProgram?.currency === 'KES' ? 'Kenya' : 'Nigeria');
+
+        affiliate = await prisma.affiliate.create({
           data: {
             userId: user.id,
             referralCode,
-            programId: data.programId || null,
+            programId: resolvedProgram?.id || null,
             payoutDetails: {
               phone: data.phone || null,
               website: data.website || null,
               promotionMethod: data.promotionMethod || null,
+              country: countryName,
+              currency: resolvedProgram?.currency || 'NGN',
             },
-            balanceCents: 0
-          }
+            balanceCents: 0,
+          },
+          include: {
+            program: true,
+          },
         });
       }
 
       return {
         success: true,
         message: 'Registration successful',
-        user: user
+        user: user,
+        affiliate: affiliate,
       };
     } catch (error) {
       console.error('Registration error:', error);

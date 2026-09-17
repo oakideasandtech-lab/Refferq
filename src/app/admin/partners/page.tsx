@@ -146,7 +146,10 @@ export default function PartnersPage() {
           customers: aff._count?.referrals || 0,
           revenue: 0,
           earnings: aff.balanceCents || 0,
-          groupName: '',
+          groupName: aff.partnerGroup?.name || '',
+          currency: aff.currency || 'NGN',
+          currencySymbol: aff.currencySymbol || (aff.currency === 'KES' ? 'KSh ' : '₦'),
+          countryName: aff.countryName || (aff.currency === 'KES' ? 'Kenya' : 'Nigeria'),
         }));
         setPartners(formattedPartners);
         setCurrencySymbol(data.currencySymbol || settingsCurrencySymbol);
