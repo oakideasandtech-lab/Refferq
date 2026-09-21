@@ -57,10 +57,10 @@ export async function GET(request: NextRequest) {
     const totalCommissions = commissions.length;
     const pendingCommissionsCount = pendingCommissionsList.length;
     const totalConversions = conversions.length;
-    const totalClicks = referrals.reduce((sum, r) => {
-      const metadata = r.metadata as any;
-      return sum + (metadata?.clicks || 0);
-    }, 0);
+    const totalClicks = await prisma.referralClick.count({
+      where: { referral: { affiliateId: affiliate.id } },
+    });
+    const realReferrals = referrals.filter(r => !r.leadEmail?.includes('@tracking.internal'));
     const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
 
     const nextMaturesAt = pendingCommissionsList
@@ -76,10 +76,11 @@ export async function GET(request: NextRequest) {
       pendingCommissions: pendingCommissionsCount,
       totalConversions,
       totalClicks,
+      totalLeads: realReferrals.length,
       conversionRate,
     };
 
-    const mappedReferrals = referrals.map(ref => {
+    const mappedReferrals = realReferrals.map(ref => {
       const metadata = ref.metadata as any;
       return {
         ...ref,

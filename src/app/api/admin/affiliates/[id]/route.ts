@@ -41,7 +41,33 @@ export async function GET(
       return NextResponse.json({ error: 'Affiliate not found' }, { status: 404 });
     }
 
+    // Count real leads (excluding @tracking.internal click placeholders)
+    const realLeadsCount = await prisma.referral.count({
+      where: {
+        affiliateId: affiliate.id,
+        leadEmail: { not: { contains: '@tracking.internal' } },
+      },
+    });
+
+    // Count clicks across all referrals for this affiliate
+    const totalClicks = await prisma.referralClick.count({
+      where: {
+        referral: { affiliateId: affiliate.id },
+      },
+    });
+
+    // Aggregate total revenue from conversions
+    const revenueAgg = await prisma.conversion.aggregate({
+      where: { affiliateId: affiliate.id },
+      _sum: { amountCents: true },
+    });
+    const totalRevenueCents = revenueAgg._sum.amountCents || 0;
+
     const details = (affiliate.payoutDetails as any) || {};
+    const currency = affiliate.program?.currency || details.currency || 'NGN';
+    const { getCurrencySymbolForCode } = await import('@/lib/currency');
+    const currencySymbol = getCurrencySymbolForCode(currency);
+    const countryName = affiliate.program?.countryName || details.country || (currency === 'KES' ? 'Kenya' : 'Nigeria');
 
     return NextResponse.json({
       success: true,
@@ -58,13 +84,19 @@ export async function GET(
         bankName: affiliate.bankName || details.bankName || null,
         accountName: affiliate.accountName || details.accountName || null,
         accountNumber: affiliate.accountNumber || details.accountNumber || null,
-        phone: details.phone || null,
+        phone: details.phone || affiliate.user.phone || null,
         website: details.website || null,
         promotionMethod: details.promotionMethod || null,
         payoutDetails: details,
         createdAt: affiliate.createdAt,
-        totalLeads: affiliate._count.referrals,
+        totalClicks,
+        totalLeads: realLeadsCount,
         totalConversions: affiliate._count.conversions,
+        totalRevenue: totalRevenueCents / 100,
+        currency,
+        currencySymbol,
+        countryName,
+        programName: affiliate.program?.name || 'PulseISP Partner Program',
       },
     });
   } catch (error) {

@@ -19,32 +19,80 @@
     return;
   }
 
-  // Cookie utilities
-  const Cookies = {
+  // Cookie & Storage utilities
+  function getRootDomain() {
+    try {
+      const parts = window.location.hostname.split('.');
+      if (parts.length >= 2) {
+        // e.g. auth.pulseisp.com -> .pulseisp.com
+        return '.' + parts.slice(-2).join('.');
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  const Storage = {
     set: function(name, value, days) {
-      const expires = new Date();
-      expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-      document.cookie = name + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+      try {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+        const rootDomain = getRootDomain();
+        const domainAttr = rootDomain ? `;domain=${rootDomain}` : '';
+        
+        // Set root-domain cookie
+        document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/${domainAttr};SameSite=Lax`;
+        // Also set standard path cookie
+        document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+      } catch (e) {}
+
+      try { localStorage.setItem(name, value); } catch (e) {}
+      try { sessionStorage.setItem(name, value); } catch (e) {}
     },
     get: function(name) {
-      const nameEQ = name + '=';
-      const ca = document.cookie.split(';');
-      for(let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-      }
+      try {
+        const nameEQ = name + '=';
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+        }
+      } catch (e) {}
+
+      try {
+        const localVal = localStorage.getItem(name);
+        if (localVal) return localVal;
+      } catch (e) {}
+
+      try {
+        const sessionVal = sessionStorage.getItem(name);
+        if (sessionVal) return sessionVal;
+      } catch (e) {}
+
       return null;
     },
     delete: function(name) {
-      this.set(name, '', -1);
+      try {
+        const rootDomain = getRootDomain();
+        const domainAttr = rootDomain ? `;domain=${rootDomain}` : '';
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/${domainAttr}`;
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      } catch (e) {}
+      try { localStorage.removeItem(name); } catch (e) {}
+      try { sessionStorage.removeItem(name); } catch (e) {}
     }
   };
 
+  const Cookies = Storage;
+
   // Get referral code from URL parameter
   function getReferralCodeFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('ref') || urlParams.get('referral') || urlParams.get('affiliate');
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('ref') || urlParams.get('referral') || urlParams.get('affiliate') || urlParams.get('r');
+    } catch (e) {
+      return null;
+    }
   }
 
   // Track referral click

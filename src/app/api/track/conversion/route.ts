@@ -91,6 +91,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const customerPhone = body.customerPhone || (metadata as any)?.phone || null;
+    const companyName = (metadata as any)?.company || (metadata as any)?.business_name || '';
+
     // Check if referral with this email already exists
     let referral;
     if (customerEmail) {
@@ -107,21 +110,28 @@ export async function POST(req: NextRequest) {
       referral = await prisma.referral.create({
         data: {
           leadEmail: customerEmail,
-          leadName: customerName || 'Unknown Customer',
+          leadName: customerName || companyName || 'Unknown Customer',
+          leadPhone: customerPhone,
           affiliateId: affiliate.id,
           status: 'APPROVED',
-          metadata: metadata || {},
+          metadata: {
+            ...(metadata || {}),
+            company: companyName,
+          },
         },
       });
-    } else if (referral && referral.status === 'PENDING') {
-      // Update referral status to APPROVED
+    } else if (referral) {
+      // Update referral status and attach phone/company info
       referral = await prisma.referral.update({
         where: { id: referral.id },
         data: {
+          leadName: customerName || referral.leadName,
+          leadPhone: customerPhone || referral.leadPhone,
           status: 'APPROVED',
           metadata: {
             ...(referral.metadata as object),
             ...metadata,
+            company: companyName || (referral.metadata as any)?.company || '',
           },
         },
       });
@@ -129,12 +139,13 @@ export async function POST(req: NextRequest) {
 
     // Create conversion record
     const amountCents = Math.round((amount || 0) * 100);
+    const eventType = body.eventType === 'SIGNUP' ? 'SIGNUP' : (amountCents > 0 ? 'PURCHASE' : 'SIGNUP');
 
     const conversion = await prisma.conversion.create({
       data: {
         affiliateId: affiliate.id,
         referralId: referral?.id || null,
-        eventType: 'PURCHASE',
+        eventType: eventType as any,
         amountCents,
         currency: currency || 'NGN',
         status: 'PENDING',

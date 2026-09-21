@@ -149,6 +149,40 @@ export default function PartnerDetailPage() {
 
   const fetchPartnerData = async () => {
     try {
+      // First try fetching single affiliate by ID
+      const singleRes = await fetch(`/api/admin/affiliates/${partnerId}`);
+      if (singleRes.ok) {
+        const singleData = await singleRes.json();
+        if (singleData.success && singleData.partner) {
+          const p = singleData.partner;
+          setPartner({
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            referralCode: p.referralCode,
+            partnerGroup: p.partnerGroup,
+            commissionRate: p.commissionRate || 0.10,
+            status: p.status,
+            phone: p.phone || p.payoutDetails?.phone || 'Not provided',
+            website: p.website || p.payoutDetails?.website,
+            promotionMethod: p.promotionMethod || p.payoutDetails?.promotionMethod,
+            bankName: p.bankName || p.payoutDetails?.bankName,
+            accountName: p.accountName || p.payoutDetails?.accountName,
+            accountNumber: p.accountNumber || p.payoutDetails?.accountNumber,
+            totalClicks: p.totalClicks || 0,
+            totalLeads: p.totalLeads || 0,
+            totalRevenue: p.totalRevenue || 0,
+            createdAt: p.createdAt,
+            currency: p.currency || 'NGN',
+            currencySymbol: p.currencySymbol || (p.currency === 'KES' ? 'KSh ' : '₦'),
+            countryName: p.countryName || (p.currency === 'KES' ? 'Kenya' : 'Nigeria'),
+            programName: p.programName || 'PulseISP Partner Program',
+          });
+          return;
+        }
+      }
+
+      // Fallback to all affiliates endpoint
       const res = await fetch('/api/admin/affiliates');
       if (res.ok) {
         const data = await res.json();
@@ -157,23 +191,24 @@ export default function PartnerDetailPage() {
           const cur = affiliate.currency || affiliate.program?.currency || 'NGN';
           const sym = affiliate.currencySymbol || (cur === 'KES' ? 'KSh ' : '₦');
           const country = affiliate.countryName || affiliate.program?.countryName || (cur === 'KES' ? 'Kenya' : 'Nigeria');
+          const details = affiliate.payoutDetails || {};
 
           setPartner({
             id: affiliate.id,
-            name: affiliate.name,
-            email: affiliate.email,
+            name: affiliate.user?.name || affiliate.name || '',
+            email: affiliate.user?.email || affiliate.email || '',
             referralCode: affiliate.referralCode,
             partnerGroup: affiliate.partnerGroup?.name || affiliate.partnerGroup,
             commissionRate: (affiliate.program?.commissionRate ? affiliate.program.commissionRate / 100 : affiliate.commissionRate) || 0.10,
-            status: affiliate.status,
-            phone: affiliate.bankName || affiliate.phone || affiliate.payoutDetails?.phone,
-            website: affiliate.website || affiliate.payoutDetails?.website,
-            promotionMethod: affiliate.promotionMethod || affiliate.payoutDetails?.promotionMethod,
-            bankName: affiliate.bankName || affiliate.payoutDetails?.bankName,
-            accountName: affiliate.accountName || affiliate.payoutDetails?.accountName,
-            accountNumber: affiliate.accountNumber || affiliate.payoutDetails?.accountNumber,
+            status: affiliate.user?.status || affiliate.status,
+            phone: details.phone || affiliate.phone || 'Not provided',
+            website: affiliate.website || details.website,
+            promotionMethod: affiliate.promotionMethod || details.promotionMethod,
+            bankName: affiliate.bankName || details.bankName,
+            accountName: affiliate.accountName || details.accountName,
+            accountNumber: affiliate.accountNumber || details.accountNumber,
             totalClicks: affiliate.totalClicks || 0,
-            totalLeads: affiliate.totalLeads || affiliate._count?.referrals || 0,
+            totalLeads: affiliate.totalLeads || 0,
             totalRevenue: affiliate.totalRevenue || 0,
             createdAt: affiliate.createdAt,
             currency: cur,

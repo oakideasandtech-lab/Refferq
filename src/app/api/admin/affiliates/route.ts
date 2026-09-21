@@ -57,16 +57,40 @@ export async function GET(request: NextRequest) {
     const { getCurrencySymbolForCode, getCurrencySymbol } = await import('@/lib/currency');
     const defaultSymbol = await getCurrencySymbol();
 
-    const formattedAffiliates = affiliates.map((a) => {
-      const currency = a.program?.currency || 'NGN';
-      const currencySymbol = getCurrencySymbolForCode(currency);
-      return {
-        ...a,
-        currency,
-        currencySymbol,
-        countryName: a.program?.countryName || (currency === 'NGN' ? 'Nigeria' : currency === 'KES' ? 'Kenya' : 'Global'),
-      };
-    });
+    const formattedAffiliates = await Promise.all(
+      affiliates.map(async (a) => {
+        const details = (a.payoutDetails as any) || {};
+        const currency = a.program?.currency || details.currency || 'NGN';
+        const currencySymbol = getCurrencySymbolForCode(currency);
+
+        const realLeadsCount = await prisma.referral.count({
+          where: {
+            affiliateId: a.id,
+            leadEmail: { not: { contains: '@tracking.internal' } },
+          },
+        });
+
+        const totalClicks = await prisma.referralClick.count({
+          where: {
+            referral: { affiliateId: a.id },
+          },
+        });
+
+        return {
+          ...a,
+          name: a.user.name,
+          email: a.user.email,
+          phone: details.phone || null,
+          website: details.website || null,
+          promotionMethod: details.promotionMethod || null,
+          totalLeads: realLeadsCount,
+          totalClicks,
+          currency,
+          currencySymbol,
+          countryName: a.program?.countryName || details.country || (currency === 'NGN' ? 'Nigeria' : currency === 'KES' ? 'Kenya' : 'Global'),
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
