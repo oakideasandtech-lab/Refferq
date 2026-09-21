@@ -84,7 +84,7 @@ export async function GET(
         bankName: affiliate.bankName || details.bankName || null,
         accountName: affiliate.accountName || details.accountName || null,
         accountNumber: affiliate.accountNumber || details.accountNumber || null,
-        phone: details.phone || affiliate.user.phone || null,
+        phone: details.phone || (affiliate.user as any)?.phone || null,
         website: details.website || null,
         promotionMethod: details.promotionMethod || null,
         payoutDetails: details,
