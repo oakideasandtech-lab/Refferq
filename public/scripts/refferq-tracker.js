@@ -89,7 +89,7 @@
   function getReferralCodeFromURL() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('ref') || urlParams.get('referral') || urlParams.get('affiliate') || urlParams.get('r');
+      return urlParams.get('ref') || urlParams.get('referral') || urlParams.get('affiliate') || urlParams.get('r') || urlParams.get('referee') || urlParams.get('partner') || urlParams.get('code');
     } catch (e) {
       return null;
     }
