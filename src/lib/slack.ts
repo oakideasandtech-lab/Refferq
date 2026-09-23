@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { getAppUrl } from './company';
 
 interface SlackField {
   title: string;
@@ -77,7 +78,7 @@ export async function notifyPendingPartnerApproval(data: {
   referralCode?: string;
   affiliateId?: string;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+  const appUrl = getAppUrl();
   const adminPartnerUrl = data.affiliateId
     ? `${appUrl}/admin/partners/${data.affiliateId}`
     : `${appUrl}/admin/partners`;
@@ -122,7 +123,7 @@ export async function notifyPendingPayout(data: {
   commissionCount?: number;
   payoutId?: string;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+  const appUrl = getAppUrl();
   const adminPayoutUrl = `${appUrl}/admin/payouts`;
 
   const cur = data.currency || 'NGN';
@@ -173,7 +174,7 @@ export async function notifyFlaggedOrLargeCommission(data: {
   reason?: string;
   conversionId?: string;
 }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+  const appUrl = getAppUrl();
   const adminConversionUrl = `${appUrl}/admin/conversions`;
 
   const cur = data.currency || 'NGN';

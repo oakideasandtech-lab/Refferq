@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
         if (newlyApproved.length > 0) {
           try {
             const { emailService } = await import('@/lib/email');
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+            const { getAppUrl } = await import('@/lib/company');
+            const appUrl = getAppUrl();
 
             for (const aff of newlyApproved) {
               try {

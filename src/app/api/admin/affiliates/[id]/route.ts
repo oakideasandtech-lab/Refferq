@@ -171,7 +171,8 @@ export async function PATCH(
     if (status === 'ACTIVE' && previousStatus !== 'ACTIVE') {
       try {
         const { emailService } = await import('@/lib/email');
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+        const { getAppUrl } = await import('@/lib/company');
+        const appUrl = getAppUrl();
         const commissionRate = affiliate.program?.commissionRate || 20;
 
         await emailService.sendAffiliateApprovedEmail({
