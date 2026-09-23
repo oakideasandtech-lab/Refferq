@@ -38,6 +38,16 @@ export interface WelcomeEmailData {
   password?: string;
 }
 
+export interface AffiliateApprovedEmailData {
+  name: string;
+  email: string;
+  referralCode: string;
+  referralLink: string;
+  loginUrl: string;
+  programName?: string;
+  commissionRate?: number;
+}
+
 export interface ReferralNotificationData {
   affiliateName: string;
   leadName: string;
@@ -235,6 +245,102 @@ class EmailService {
       <div class="footer">
         <p>This email was sent to ${this.escapeHtml(data.email)}</p>
         <p>© ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
+    `;
+  }
+
+  private generateAffiliateApprovedHTML(data: AffiliateApprovedEmailData): string {
+    const commissionText = data.commissionRate ? `${data.commissionRate}%` : '20%';
+    const programName = data.programName || 'PulseISP Partner Program';
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Partner Account Approved!</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; }
+        .container { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 36px 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+        .header p { margin: 8px 0 0 0; font-size: 15px; opacity: 0.95; }
+        .content { padding: 32px 30px; }
+        .greeting { font-size: 18px; font-weight: 600; color: #0f172a; margin-top: 0; }
+        .highlight-card { background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 10px; padding: 20px; margin: 24px 0; }
+        .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #fdba74; font-size: 14px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: #7c2d12; font-weight: 500; }
+        .detail-val { font-weight: 700; color: #9a3412; font-family: monospace; }
+        .link-box { background: #ffffff; border: 1px solid #fdba74; border-radius: 6px; padding: 12px; margin-top: 14px; word-break: break-all; font-family: monospace; font-size: 13px; color: #c2410c; }
+        .cta-container { text-align: center; margin: 30px 0 24px; }
+        .button { display: inline-block; background: #f97316; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.25); }
+        .steps { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .steps h4 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
+        .step-item { display: flex; gap: 10px; margin-bottom: 10px; font-size: 14px; color: #334155; }
+        .step-num { background: #ffedd5; color: #c2410c; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+        .footer { text-align: center; padding: 24px; color: #64748b; font-size: 13px; border-top: 1px solid #f1f5f9; background: #fcfcfd; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 You're Approved!</h1>
+          <p>Welcome aboard as an official PulseISP Partner</p>
+        </div>
+        <div class="content">
+          <p class="greeting">Hello ${this.escapeHtml(data.name)},</p>
+          <p>Great news! Your application to join the <strong>${this.escapeHtml(programName)}</strong> has been approved. Your partner account is now active and ready to start earning commissions.</p>
+          
+          <div class="highlight-card">
+            <div class="detail-row">
+              <span class="detail-label">Status</span>
+              <span class="detail-val" style="color: #16a34a;">● ACTIVE</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Commission Rate</span>
+              <span class="detail-val">${this.escapeHtml(commissionText)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Referral Code</span>
+              <span class="detail-val">${this.escapeHtml(data.referralCode)}</span>
+            </div>
+            <div style="margin-top: 12px;">
+              <span class="detail-label" style="display:block; font-size: 12px; margin-bottom: 4px;">YOUR UNIQUE REFERRAL LINK:</span>
+              <div class="link-box">${this.escapeHtml(data.referralLink)}</div>
+            </div>
+          </div>
+
+          <div class="cta-container">
+            <a href="${data.loginUrl}" class="button">Access Partner Dashboard →</a>
+          </div>
+
+          <div class="steps">
+            <h4>Next Steps to Start Earning:</h4>
+            <div class="step-item">
+              <span class="step-num">1</span>
+              <span><strong>Share your link:</strong> Send your referral link to prospective clients, tenants, or community members.</span>
+            </div>
+            <div class="step-item">
+              <span class="step-num">2</span>
+              <span><strong>Add payout details:</strong> Log in and add your bank account information under Settings to receive automatic commission payouts.</span>
+            </div>
+            <div class="step-item">
+              <span class="step-num">3</span>
+              <span><strong>Track in real time:</strong> Monitor clicks, referrals, conversions, and pending payouts directly from your dashboard.</span>
+            </div>
+          </div>
+
+          <p style="font-size: 14px; color: #64748b;">If you need assistance or have questions about referral materials, reach out to our team at any time.</p>
+          
+          <p style="margin-top: 24px;">Best regards,<br><strong>The PulseISP Team</strong></p>
+        </div>
+        <div class="footer">
+          <p>This message was sent to ${this.escapeHtml(data.email)}</p>
+          <p>© ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.</p>
+        </div>
       </div>
     </body>
     </html>
@@ -521,6 +627,26 @@ class EmailService {
       fallbackSubject: `Welcome to PulseISP - ${data.role === 'affiliate' ? 'Affiliate' : 'Admin'} Account Created`,
       variables: data,
       generateFallbackHtml: () => this.generateWelcomeEmailHTML(data),
+    });
+  }
+
+  async sendAffiliateApprovedEmail(data: AffiliateApprovedEmailData): Promise<{ success: boolean; message: string }> {
+    const commissionText = data.commissionRate ? `${data.commissionRate}%` : '20%';
+    return this.sendTemplatedEmail({
+      to: data.email,
+      templateType: 'PARTNER_APPROVAL',
+      fallbackSubject: `🎉 Welcome to PulseISP! Your Partner Account Has Been Approved`,
+      variables: {
+        ...data,
+        partner_name: data.name,
+        user_name: data.name,
+        referral_code: data.referralCode,
+        referral_link: data.referralLink,
+        login_url: data.loginUrl,
+        commission_rate: commissionText,
+        program_name: data.programName || 'PulseISP Partner Program',
+      },
+      generateFallbackHtml: () => this.generateAffiliateApprovedHTML(data),
     });
   }
 

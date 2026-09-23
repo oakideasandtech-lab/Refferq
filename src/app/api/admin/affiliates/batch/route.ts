@@ -56,10 +56,15 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Get all affiliates to find their userIds
+        // Get all affiliates to find their userIds and programs
         const affiliates = await prisma.affiliate.findMany({
-          where: { id: { in: affiliateIds } }
+          where: { id: { in: affiliateIds } },
+          include: { user: true, program: true }
         });
+
+        const newlyApproved = status === 'ACTIVE'
+          ? affiliates.filter(aff => aff.user.status !== 'ACTIVE')
+          : [];
 
         const userIds = affiliates.map(aff => aff.userId);
 
@@ -70,6 +75,34 @@ export async function POST(request: NextRequest) {
         });
 
         updatedCount = result.count;
+
+        // Send approval emails to newly activated partners
+        if (newlyApproved.length > 0) {
+          try {
+            const { emailService } = await import('@/lib/email');
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+
+            for (const aff of newlyApproved) {
+              try {
+                const commissionRate = aff.program?.commissionRate || 20;
+                await emailService.sendAffiliateApprovedEmail({
+                  name: aff.user.name,
+                  email: aff.user.email,
+                  referralCode: aff.referralCode,
+                  referralLink: `${appUrl}/r/${aff.referralCode}`,
+                  loginUrl: `${appUrl}/login`,
+                  programName: aff.program?.name || 'PulseISP Partner Program',
+                  commissionRate,
+                });
+                console.log(`[Approval Email] Batch approval email sent to ${aff.user.email}`);
+              } catch (err) {
+                console.error(`[Approval Email] Failed to send batch approval email to ${aff.user.email}:`, err);
+              }
+            }
+          } catch (batchEmailErr) {
+            console.error('[Approval Email] Failed to process batch approval emails:', batchEmailErr);
+          }
+        }
 
         // Create audit log
         await prisma.auditLog.create({

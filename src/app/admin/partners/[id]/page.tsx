@@ -130,6 +130,7 @@ export default function PartnerDetailPage() {
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [selectedCommissions, setSelectedCommissions] = useState<string[]>([]);
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [approvingPartner, setApprovingPartner] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
   const [newStatus, setNewStatus] = useState<'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'>('PENDING');
@@ -337,6 +338,36 @@ export default function PartnerDetailPage() {
     }
   };
 
+  const handleApprovePartner = async () => {
+    if (!partner) return;
+    if (!confirm(`Approve ${partner.name} as an active partner? An approval email with their unique referral link and dashboard portal will be sent immediately.`)) return;
+
+    setApprovingPartner(true);
+    try {
+      const res = await fetch(`/api/admin/affiliates/${partner.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || '',
+        },
+        body: JSON.stringify({ status: 'ACTIVE' }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('🎉 Partner approved successfully! Approval email sent to ' + partner.email);
+        fetchPartnerData();
+      } else {
+        alert(`Error: ${data.error || 'Failed to approve partner'}`);
+      }
+    } catch (err) {
+      console.error('Failed to approve partner:', err);
+      alert('Failed to approve partner');
+    } finally {
+      setApprovingPartner(false);
+    }
+  };
+
   const openStatusModal = (payout: Payout) => {
     setEditingPayout(payout);
     setNewStatus(payout.status);
@@ -453,14 +484,30 @@ export default function PartnerDetailPage() {
             </div>
           </div>
         </div>
-        <Button
-          onClick={() => setShowPayoutModal(true)}
-          disabled={pendingCommissions.length === 0}
-          className="gap-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          Create Payout
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {partner.status === 'PENDING' && (
+            <Button
+              onClick={handleApprovePartner}
+              disabled={approvingPartner}
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-sm"
+            >
+              {approvingPartner ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4" />
+              )}
+              Approve Partner
+            </Button>
+          )}
+          <Button
+            onClick={() => setShowPayoutModal(true)}
+            disabled={pendingCommissions.length === 0}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Create Payout
+          </Button>
+        </div>
       </div>
 
       {/* Registration & Application Info */}

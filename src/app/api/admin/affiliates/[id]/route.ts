@@ -144,10 +144,10 @@ export async function PATCH(
       );
     }
 
-    // Get affiliate to find userId
+    // Get affiliate to find userId and program
     const affiliate = await prisma.affiliate.findUnique({
       where: { id: params.id },
-      include: { user: true }
+      include: { user: true, program: true }
     });
 
     if (!affiliate) {
@@ -157,6 +157,8 @@ export async function PATCH(
       );
     }
 
+    const previousStatus = affiliate.user.status;
+
     // Update user status
     const updatedUser = await prisma.user.update({
       where: { id: affiliate.userId },
@@ -164,6 +166,28 @@ export async function PATCH(
         status: status as UserStatus
       }
     });
+
+    // If affiliate is being approved (status set to ACTIVE), send approval email
+    if (status === 'ACTIVE' && previousStatus !== 'ACTIVE') {
+      try {
+        const { emailService } = await import('@/lib/email');
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://affiliate.pulseisp.com';
+        const commissionRate = affiliate.program?.commissionRate || 20;
+
+        await emailService.sendAffiliateApprovedEmail({
+          name: affiliate.user.name,
+          email: affiliate.user.email,
+          referralCode: affiliate.referralCode,
+          referralLink: `${appUrl}/r/${affiliate.referralCode}`,
+          loginUrl: `${appUrl}/login`,
+          programName: affiliate.program?.name || 'PulseISP Partner Program',
+          commissionRate,
+        });
+        console.log(`[Approval Email] Sent partner approval email to ${affiliate.user.email}`);
+      } catch (emailErr) {
+        console.error('[Approval Email] Failed to send partner approval email:', emailErr);
+      }
+    }
 
     // Create audit log
     await prisma.auditLog.create({
@@ -173,7 +197,7 @@ export async function PATCH(
         objectType: 'AFFILIATE',
         objectId: params.id,
         payload: {
-          oldStatus: affiliate.user.status,
+          oldStatus: previousStatus,
           newStatus: status,
           notes: notes || null,
           affiliateEmail: affiliate.user.email
