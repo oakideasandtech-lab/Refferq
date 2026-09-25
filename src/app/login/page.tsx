@@ -21,7 +21,7 @@ import {
   InputOTPSeparator,
 } from '@/components/ui/input-otp';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, ShieldCheck, ArrowLeft, Loader2, ArrowUpRight } from 'lucide-react';
 
 type Step = 'email' | 'otp';
 
@@ -122,7 +122,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
+    <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
+      {/* Top App Reference Bar */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+        <a
+          href="https://auth.pulseisp.com/login"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-card/80 hover:bg-card text-muted-foreground hover:text-foreground transition-all border border-border shadow-sm hover:shadow"
+        >
+          <span>Looking for the ISP Software?</span>
+          <span className="font-semibold text-primary flex items-center gap-0.5">
+            Go to App <ArrowUpRight className="h-3 w-3" />
+          </span>
+        </a>
+      </div>
+
       <div className="w-full max-w-md space-y-6">
         {/* Logo & Branding */}
         <div className="text-center space-y-3">
@@ -272,12 +285,23 @@ export default function LoginPage() {
         </Card>
 
         {/* Footer */}
-        <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-medium text-primary hover:underline">
-            Sign up
-          </Link>
-        </p>
+        <div className="space-y-2 text-center">
+          <p className="text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-medium text-primary hover:underline">
+              Sign up
+            </Link>
+          </p>
+          <p className="text-xs text-muted-foreground/80">
+            Looking for your ISP Management Portal?{' '}
+            <a
+              href="https://auth.pulseisp.com/login"
+              className="text-muted-foreground hover:text-primary underline font-medium transition-colors"
+            >
+              Sign in here
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

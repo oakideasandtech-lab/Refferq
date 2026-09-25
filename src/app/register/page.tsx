@@ -43,6 +43,7 @@ import {
   Percent,
   Clock,
   ShieldAlert,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useRecaptcha } from '@/hooks/useRecaptcha';
 
@@ -277,7 +278,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen relative w-full flex items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
+      {/* Top App Reference Bar */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+        <a
+          href="https://auth.pulseisp.com/login"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-card/80 hover:bg-card text-muted-foreground hover:text-foreground transition-all border border-border shadow-sm hover:shadow"
+        >
+          <span>Looking for the ISP Software?</span>
+          <span className="font-semibold text-primary flex items-center gap-0.5">
+            Go to App <ArrowUpRight className="h-3 w-3" />
+          </span>
+        </a>
+      </div>
+
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
         {/* Left Hero Panel: Value Proposition & Partner Benefits */}
@@ -532,12 +546,23 @@ export default function RegisterPage() {
                       {loading ? 'Creating Partner Account...' : 'Join Partner Network'}
                     </Button>
 
-                    <p className="text-xs text-center text-muted-foreground">
-                      Already have an account?{' '}
-                      <Link href="/login" className="text-primary font-medium hover:underline">
-                        Sign in here
-                      </Link>
-                    </p>
+                    <div className="space-y-1.5 text-center pt-1">
+                      <p className="text-xs text-muted-foreground">
+                        Already an affiliate partner?{' '}
+                        <Link href="/login" className="text-primary font-medium hover:underline">
+                          Sign in here
+                        </Link>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground/80">
+                        Looking for your ISP Management Portal?{' '}
+                        <a
+                          href="https://auth.pulseisp.com/login"
+                          className="text-muted-foreground hover:text-primary underline font-medium transition-colors"
+                        >
+                          Sign in here
+                        </a>
+                      </p>
+                    </div>
                   </CardFooter>
                 </form>
               </>
