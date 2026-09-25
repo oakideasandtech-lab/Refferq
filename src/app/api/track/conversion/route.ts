@@ -55,31 +55,57 @@ export async function POST(req: NextRequest) {
       timestamp,
     } = body;
 
-    if (!referralCode) {
-      return NextResponse.json(
-        { success: false, error: 'Referral code is required' },
-        { status: 400 }
-      );
-    }
+    let affiliate: any = null;
+    let referral: any = null;
 
-    // Find affiliate by referral code
-    const affiliate = await prisma.affiliate.findUnique({
-      where: { referralCode },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            status: true,
+    // 1. First attempt: Look up affiliate by referralCode if provided
+    if (referralCode) {
+      affiliate = await prisma.affiliate.findUnique({
+        where: { referralCode },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              status: true,
+            },
           },
         },
-      },
-    });
+      });
+    }
+
+    // 2. Second attempt: Lifetime customer attribution by customerEmail
+    if (!affiliate && customerEmail) {
+      const cleanEmail = customerEmail.toLowerCase().trim();
+      referral = await prisma.referral.findFirst({
+        where: {
+          leadEmail: cleanEmail,
+        },
+        include: {
+          affiliate: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  status: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (referral?.affiliate) {
+        affiliate = referral.affiliate;
+      }
+    }
 
     if (!affiliate) {
       return NextResponse.json(
-        { success: false, error: 'Invalid referral code' },
+        { success: false, error: 'No matching affiliate found for referral code or customer email' },
         { status: 404 }
       );
     }
@@ -95,11 +121,10 @@ export async function POST(req: NextRequest) {
     const companyName = (metadata as any)?.company || (metadata as any)?.business_name || '';
 
     // Check if referral with this email already exists
-    let referral;
-    if (customerEmail) {
+    if (!referral && customerEmail) {
       referral = await prisma.referral.findFirst({
         where: {
-          leadEmail: customerEmail,
+          leadEmail: customerEmail.toLowerCase().trim(),
           affiliateId: affiliate.id,
         },
       });
@@ -109,7 +134,7 @@ export async function POST(req: NextRequest) {
     if (!referral && customerEmail) {
       referral = await prisma.referral.create({
         data: {
-          leadEmail: customerEmail,
+          leadEmail: customerEmail.toLowerCase().trim(),
           leadName: customerName || companyName || 'Unknown Customer',
           leadPhone: customerPhone,
           affiliateId: affiliate.id,
@@ -148,7 +173,7 @@ export async function POST(req: NextRequest) {
         eventType: eventType as any,
         amountCents,
         currency: currency || 'NGN',
-        status: 'PENDING',
+        status: amountCents > 0 ? 'PENDING' : 'APPROVED',
         eventMetadata: {
           orderId: orderId || null,
           url: url || null,
@@ -158,8 +183,32 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Note: Commission calculation will be done by the commission rules system
-    // This just creates the conversion record
+    // If purchase/payment with value, generate commission for affiliate
+    let commission = null;
+    if (amountCents > 0) {
+      const program = affiliate.programId
+        ? await prisma.program.findUnique({ where: { id: affiliate.programId } })
+        : await prisma.program.findFirst({ where: { isDefault: true } });
+      const commissionRate = program?.commissionRate || 10;
+      const commissionAmount = Math.floor((amountCents * commissionRate) / 100);
+
+      const settings = await prisma.programSettings.findFirst();
+      const holdDays = (settings as any)?.commissionHoldDays ?? 30;
+      const maturesAt = new Date();
+      maturesAt.setDate(maturesAt.getDate() + holdDays);
+
+      commission = await prisma.commission.create({
+        data: {
+          conversionId: conversion.id,
+          affiliateId: affiliate.id,
+          userId: affiliate.userId,
+          amountCents: commissionAmount,
+          rate: commissionRate,
+          status: 'PENDING',
+          maturesAt,
+        },
+      });
+    }
 
     console.log('✅ Conversion tracked successfully:', {
       conversionId: conversion.id,
