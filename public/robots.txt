@@ -1,38 +1,18 @@
-# Refferq - Open Source Affiliate Platform
-# https://app.refferq.com/
+# PulseISP Affiliate Program
+# https://affiliate.pulseisp.com
 
 User-agent: *
 Allow: /
-Allow: /features.html
-Allow: /pricing.html
-Allow: /docs.html
+Allow: /register
+Allow: /login
+Allow: /terms
+Allow: /privacy
 
-# Disallow admin and user areas
+# Disallow private administrative, portal, tracking and internal API areas
 Disallow: /admin/
 Disallow: /affiliate/
 Disallow: /api/
+Disallow: /r/
 
-# Disallow authentication pages from indexing
-Disallow: /login
-Disallow: /register
-Disallow: /verify-otp
-
-# Disallow private user data
-Disallow: /profile/
-Disallow: /settings/
-
-# Sitemap
-Sitemap: https://app.refferq.com/sitemap.xml
-
-# Crawl-delay for respectful crawling
-Crawl-delay: 5
-
-# Allow specific bots
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Slurp
-Allow: /
+# Sitemap index
+Sitemap: https://affiliate.pulseisp.com/sitemap.xml
