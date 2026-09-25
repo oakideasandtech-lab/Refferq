@@ -70,11 +70,34 @@ export async function GET(request: NextRequest) {
           },
         });
 
+        const realCustomersCount = await prisma.referral.count({
+          where: {
+            affiliateId: a.id,
+            leadEmail: { not: { contains: '@tracking.internal' } },
+            OR: [
+              { status: 'APPROVED' },
+              { conversions: { some: {} } },
+            ],
+          },
+        });
+
         const totalClicks = await prisma.referralClick.count({
           where: {
             referral: { affiliateId: a.id },
           },
         });
+
+        const revenueAgg = await prisma.conversion.aggregate({
+          where: { affiliateId: a.id },
+          _sum: { amountCents: true },
+        });
+        const totalRevenueCents = revenueAgg._sum.amountCents || 0;
+
+        const commissionAgg = await prisma.commission.aggregate({
+          where: { affiliateId: a.id },
+          _sum: { amountCents: true },
+        });
+        const totalEarningsCents = commissionAgg._sum.amountCents || a.balanceCents || 0;
 
         return {
           ...a,
@@ -84,7 +107,12 @@ export async function GET(request: NextRequest) {
           website: details.website || null,
           promotionMethod: details.promotionMethod || null,
           totalLeads: realLeadsCount,
+          totalCustomers: realCustomersCount,
           totalClicks,
+          totalRevenueCents,
+          totalRevenue: totalRevenueCents / 100,
+          totalEarningsCents,
+          totalEarnings: totalEarningsCents / 100,
           currency,
           currencySymbol,
           countryName: a.program?.countryName || details.country || (currency === 'NGN' ? 'Nigeria' : currency === 'KES' ? 'Kenya' : 'Global'),

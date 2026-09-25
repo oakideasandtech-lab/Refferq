@@ -49,6 +49,18 @@ export async function GET(
       },
     });
 
+    // Count real customers (approved or with conversions)
+    const realCustomersCount = await prisma.referral.count({
+      where: {
+        affiliateId: affiliate.id,
+        leadEmail: { not: { contains: '@tracking.internal' } },
+        OR: [
+          { status: 'APPROVED' },
+          { conversions: { some: {} } },
+        ],
+      },
+    });
+
     // Count clicks across all referrals for this affiliate
     const totalClicks = await prisma.referralClick.count({
       where: {
@@ -91,6 +103,7 @@ export async function GET(
         createdAt: affiliate.createdAt,
         totalClicks,
         totalLeads: realLeadsCount,
+        totalCustomers: realCustomersCount,
         totalConversions: affiliate._count.conversions,
         totalRevenue: totalRevenueCents / 100,
         currency,

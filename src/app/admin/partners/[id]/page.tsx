@@ -232,10 +232,13 @@ export default function PartnerDetailPage() {
       if (res.ok) {
         const data = await res.json();
         const partnerCustomers = data.referrals
-          ?.filter((r: any) => r.affiliateId === partnerId)
+          ?.filter((r: any) => 
+            (r.affiliateId === partnerId || r.affiliate?.id === partnerId) &&
+            !r.leadEmail?.includes('@tracking.internal')
+          )
           .map((r: any) => ({
             id: r.id,
-            name: r.leadName,
+            name: r.company ? `${r.leadName} (${r.company})` : r.leadName,
             email: r.leadEmail,
             status: r.status,
             totalPaid: r.estimatedValue || 0,

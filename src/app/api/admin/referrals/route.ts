@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
 
         return {
           id: referral.id,
+          affiliateId: referral.affiliateId,
           leadEmail: referral.leadEmail,
           leadName: referral.leadName,
           leadPhone: referral.leadPhone,
