@@ -31,9 +31,12 @@ export async function GET(request: NextRequest) {
       },
       include: {
         user: true,
+        program: true,
+        conversions: true,
         referrals: {
           where: {
-            status: 'APPROVED'
+            status: 'APPROVED',
+            leadEmail: { not: { contains: '@tracking.internal' } },
           }
         },
         commissions: {
@@ -47,14 +50,16 @@ export async function GET(request: NextRequest) {
     // Referral conversion rate
     const totalReferrals = await prisma.referral.count({
       where: {
-        createdAt: { gte: startDate }
+        createdAt: { gte: startDate },
+        leadEmail: { not: { contains: '@tracking.internal' } },
       }
     });
 
     const approvedReferrals = await prisma.referral.count({
       where: {
         status: 'APPROVED',
-        createdAt: { gte: startDate }
+        createdAt: { gte: startDate },
+        leadEmail: { not: { contains: '@tracking.internal' } },
       }
     });
 
@@ -94,7 +99,8 @@ export async function GET(request: NextRequest) {
       by: ['status'],
       _count: true,
       where: {
-        createdAt: { gte: startDate }
+        createdAt: { gte: startDate },
+        leadEmail: { not: { contains: '@tracking.internal' } },
       }
     });
 
@@ -107,15 +113,20 @@ export async function GET(request: NextRequest) {
         totalCommissionsPaid: paidCommissions._sum.amountCents || 0,
         pendingCommissions: (totalCommissions._sum.amountCents || 0) - (paidCommissions._sum.amountCents || 0)
       },
-      topAffiliates: topAffiliates.map(affiliate => ({
-        id: affiliate.id,
-        name: affiliate.user.name,
-        email: affiliate.user.email,
-        referralCode: affiliate.referralCode,
-        totalReferrals: affiliate.referrals.length,
-        totalEarnings: affiliate.balanceCents,
-        totalCommissions: affiliate.commissions.length
-      })),
+      topAffiliates: topAffiliates.map(affiliate => {
+        const totalRevenueCents = affiliate.conversions.reduce((sum, c) => sum + (c.amountCents || 0), 0);
+        return {
+          id: affiliate.id,
+          name: affiliate.user.name,
+          email: affiliate.user.email,
+          referralCode: affiliate.referralCode,
+          totalReferrals: affiliate.referrals.length,
+          totalRevenue: totalRevenueCents,
+          totalEarnings: affiliate.balanceCents || 0,
+          totalCommissions: affiliate.commissions.length,
+          currency: affiliate.program?.currency || 'NGN',
+        };
+      }),
       referralsByStatus: referralsByStatus.map(item => ({
         status: item.status,
         count: item._count
