@@ -235,6 +235,20 @@ export default function RegisterPage() {
       if (res.ok && data.success) {
         setStep('success');
         trackGa4Event('sign_up', { method: 'email', role: 'AFFILIATE' });
+        if (typeof window !== 'undefined' && (window as any).posthog) {
+          try {
+            (window as any).posthog.identify(data.user?.id || formData.email.trim(), {
+              email: formData.email.trim(),
+              name: formData.name.trim(),
+              role: 'AFFILIATE',
+            });
+            (window as any).posthog.capture('affiliate_registered', {
+              method: 'email',
+              role: 'AFFILIATE',
+              programId: selectedProgramId,
+            });
+          } catch (_phErr) {}
+        }
         setTimeout(() => {
           const user = data.user;
           if (user.role === 'ADMIN') {

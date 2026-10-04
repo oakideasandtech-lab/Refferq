@@ -82,6 +82,18 @@ export default function LoginPage() {
 
       if (res.ok && data.success) {
         const user = data.user;
+        if (typeof window !== 'undefined' && (window as any).posthog && user) {
+          try {
+            (window as any).posthog.identify(user.id || email.trim(), {
+              email: user.email || email.trim(),
+              name: user.name,
+              role: user.role,
+            });
+            (window as any).posthog.capture('affiliate_logged_in', {
+              role: user.role,
+            });
+          } catch (_phErr) {}
+        }
         if (user.role === 'ADMIN') {
           router.push('/admin');
         } else {
